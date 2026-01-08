@@ -1,0 +1,28 @@
+FROM ubuntu:22.04
+
+WORKDIR /app
+
+RUN apt update -y
+
+RUN apt install -y curl
+RUN apt install -y sudo
+
+RUN curl -sL https://deb.nodesource.com/setup_14.x | sudo bash -
+RUN sudo apt-get install -y nodejs git
+
+# Copy the project files to the container's working directory
+COPY . /app
+
+RUN git config --global --add safe.directory /app
+
+# Install global dependencies
+RUN npm install -y
+
+# Build the project using Webpack
+RUN npm run build-prod
+
+# Expose port 8082
+EXPOSE 8082
+
+# Start the server
+CMD [ "npm", "start" ]

@@ -1,0 +1,63 @@
+= WebRTC Player API
+
+== Config
+
+[source,javascript]
+----
+const config = {
+    webRtcUrl: "https://domain.net/live.sdp",
+    retryParameters: {
+        maxAttempts: 5,
+        baseDelay: 1000, // ms
+      },
+      ui: {
+        screenshot: boolean
+      }
+}
+----
+
+== Create and load a player
+[source,javascript]
+----
+const player = new WebRTCPlayer('videoElem', videoContainer, options);
+player.load();
+----
+
+== Load Asset
+[source,javascript]
+----
+/**
+* Load another video in the player
+*/
+player.onLoadAsset(options);
+----
+
+
+== Destroy player
+[source,javascript]
+----
+/**
+* Load another video in the player
+*/
+player.destroy();
+----
+
+== Video Element
+[source,javascript]
+----
+/**
+* HTML video element
+*/
+player.getVideo();
+----
+
+== Player RTC Logs
+[source,javascript]
+----
+/**
+* Get Logs
+*/
+player.getPlayerLogs();
+----
+
+

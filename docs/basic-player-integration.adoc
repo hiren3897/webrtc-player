@@ -1,0 +1,40 @@
+= Basic Player Integration
+
+== How?
+
+=== HTML
+[source, html]
+----
+<div class="webrtc-container" id="webrtc-container" style="max-width: 50em;">
+    <video id="videoElem" class="webrtc-video webrtc-show" autoplay muted playsinline></video>
+</div>
+----
+
+[NOTE]
+CSS class **"webrtc-container" ** is important to overlay the video player controls UI.
+
+=== JS
+[source, javascript]
+----
+
+const options = {
+    webRtcUrl: 'http://localhost:8889/mystream/'
+}
+
+const videoContainer = document.querySelector('.#webrtc-container');
+
+const player = new WebRTCPlayer('videoElem', videoContainer, options);
+player.load();
+----
+
+== Load Another Video
+=== JS
+[source, javascript]
+----
+const options2 = {
+    webRtcUrl: 'http://localhost:8889/mystream2/'
+}
+
+// Load the player with another ID
+player.onLoadAsset(options2);
+----
