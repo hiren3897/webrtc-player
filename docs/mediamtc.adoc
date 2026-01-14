@@ -1,0 +1,22 @@
+= Mediamtx configuration
+
+# mediamtx.yml
+paths:
+  all:
+    source: publisher
+    # Enable recording for DVR/Timeline
+    record: yes
+    recordPath: ./recordings/%path/%Y-%m-%d_%H-%M-%S
+    
+# WebRTC (Live Flux)
+webrtc: yes
+webrtcAddress: :8889
+
+# HLS (DVR / Seekbar backup)
+hls: yes
+hlsAddress: :8888
+hlsVariant: lowLatency # 2026 standard for faster seeking
+
+# RTMP (Ingest)
+rtmp: yes
+rtmpAddress: :1935

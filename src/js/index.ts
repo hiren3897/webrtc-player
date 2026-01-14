@@ -2,7 +2,7 @@ import WebRTCPlayer from './webRTCPlayer';
 
 const videoContainer = document.querySelector('.webrtc-container');
 const options = {
-  webRtcUrl: 'http://127.0.0.1:8889/mystream',
+  webRtcUrl: 'http://127.0.0.1:8889/live/mystream',
   ui: {
     screenshot: true,
   },

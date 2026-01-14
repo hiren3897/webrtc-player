@@ -85,4 +85,17 @@ For significantly lower CPU usage on M1/M2/M3/M4 Macs, use the hardware-accelera
 ffmpeg -f avfoundation -i "0" -c:v h264_videotoolbox -b:v 2500k -realtime 1 -f flv rtmp://127.0.0.1/live/mystream
 ```
 
+#### This creates a 720p test video with a real-time clock overlay
+
+#### and a 440Hz beep/audio sync.
+
+```bash
+ffmpeg -re -f lavfi -i "testsrc=size=1280x720:rate=30" \
+-f lavfi -i "sine=frequency=440:sample_rate=48000" \
+-vf "drawtext=fontfile=/System/Library/Fonts/Helvetica.ttc:text='%{localtime\:%H\\\\\:%M\\\\\:%S}':x=w-tw-50:y=h-th-50:fontsize=72:fontcolor=white:box=1:boxcolor=black@0.5" \
+-c:v libx264 -preset ultrafast -tune zerolatency \
+-c:a libopus -b:a 64k \
+-f flv rtmp://127.0.0.1/live/mystream
+```
+
 Last updated: January 2026
