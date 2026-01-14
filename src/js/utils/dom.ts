@@ -4,7 +4,7 @@
  * @param {string} tagName
  * @return {!HTMLElement}
  */
-export const createHTMLElement = (tagName) => {
+export const createHTMLElement = (tagName: string): HTMLElement => {
   /** @type {!HTMLElement} */
   return document.createElement(tagName);
 };
@@ -13,7 +13,7 @@ export const createHTMLElement = (tagName) => {
  * Create a "button" element with the correct type.
  * @return {!HTMLButtonElement}
  */
-export const createButton = () => {
+export const createButton = (): HTMLButtonElement => {
   /** @type {!HTMLButtonElement} */
   return document.createElement('button');
 };
@@ -23,7 +23,7 @@ export const createButton = () => {
  * @param {!Element} element
  * @export
  */
-export const removeAllChildren = (element) => {
+export const removeAllChildren = (element: Element) => {
   while (element.firstChild) {
     element.removeChild(element.firstChild);
   }
@@ -35,7 +35,10 @@ export const removeAllChildren = (element) => {
  * @param {!HTMLElement} element
  * @export
  */
-export const appendChildElement = (parent, element) => {
+export const appendChildElement = (
+  parent: HTMLElement,
+  element: HTMLElement,
+) => {
   parent.appendChild(element);
 };
 
@@ -44,6 +47,6 @@ export const appendChildElement = (parent, element) => {
  * @param tagName
  * @return {NodeListOf<Element>}
  */
-export const getAllChildElements = (tagName) => {
+export const getAllChildElements = (tagName: string) => {
   return document.querySelectorAll(`${tagName}`);
 };

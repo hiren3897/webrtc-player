@@ -1,12 +1,12 @@
 import { createButton } from '../utils/dom';
+import { IControls, WebRTCVideoElement } from './interfaces';
 
 export class LiveButton {
-  /**
-     *
-     * @param parent {!HTMLElement}
-     * @param controls {Controls}
-     */
-  constructor(parent, controls) {
+  video: WebRTCVideoElement;
+
+  liveButton!: HTMLButtonElement | null;
+
+  constructor(private parent: HTMLElement, private controls: IControls) {
     this.parent = parent;
 
     this.controls = controls;

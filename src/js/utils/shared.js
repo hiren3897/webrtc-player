@@ -6,10 +6,10 @@
  * @returns {object} New object with merged key/values
  */
 export function mergeDeep(...objects) {
-  const isObject = obj => obj && typeof obj === 'object';
+  const isObject = (obj) => obj && typeof obj === 'object';
 
   return objects.reduce((prev, obj) => {
-    Object.keys(obj).forEach(key => {
+    Object.keys(obj).forEach((key) => {
       const pVal = prev[key];
       const oVal = obj[key];
 
@@ -34,7 +34,7 @@ export function getCurrentPosition(e, seekBar) {
   const position = e.clientX - seekBarRect.left;
   const scale = (max - min) / seekBarRect.width;
 
-  let realPosition = (min + scale * position);
+  let realPosition = min + scale * position;
   if (realPosition < min) {
     realPosition = min;
   } else if (realPosition > max) {

@@ -1,7 +1,7 @@
 export class DelayedTick {
   /**
-     * @param {function()} onTick
-     */
+   * @param {function()} onTick
+   */
   constructor(onTick) {
     /** @private {function()} */
     this.onTick_ = onTick;
@@ -11,12 +11,12 @@ export class DelayedTick {
   }
 
   /**
-     * Call |onTick| after |delayInSeconds| has elapsed. If there is already a
-     * pending call to |onTick|, the pending call will be canceled.
-     *
-     * @param {number} delayInSeconds
-     * @return {DelayedTick}
-     */
+   * Call |onTick| after |delayInSeconds| has elapsed. If there is already a
+   * pending call to |onTick|, the pending call will be canceled.
+   *
+   * @param {number} delayInSeconds
+   * @return {DelayedTick}
+   */
   tickAfter(delayInSeconds) {
     // We only want one timeout set at a time, so make sure no other timeouts
     // are running.
@@ -47,9 +47,9 @@ export class DelayedTick {
   }
 
   /**
-     * Cancel any pending calls to |onTick|. If there are no pending calls to
-     * |onTick|, this will be a no-op.
-     */
+   * Cancel any pending calls to |onTick|. If there are no pending calls to
+   * |onTick|, this will be a no-op.
+   */
   stop() {
     if (this.cancelPending_) {
       this.cancelPending_();

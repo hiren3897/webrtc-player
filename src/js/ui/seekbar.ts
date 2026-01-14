@@ -1,10 +1,12 @@
+import { IControls, WebRTCVideoElement } from './interfaces';
+
 export class Seekbar {
-  /**
-     *
-     * @param parent {!HTMLElement}
-     * @param controls {Controls}
-     */
-  constructor(parent, controls) {
+  video: WebRTCVideoElement;
+
+  private webRtcSeekRangeElement!: HTMLInputElement;
+  private webRtcTimelineContainer!: HTMLDivElement;
+
+  constructor(private parent: HTMLElement, private controls: IControls) {
     this.parent = parent;
 
     this.controls = controls;
@@ -20,7 +22,7 @@ export class Seekbar {
       this.webRtcSeekRangeElement.addEventListener('touchend', (e) => {
         this.onSeekEventHandler(e);
       });
-    },);
+    });
   }
 
   createTimelineContainer() {
@@ -44,15 +46,15 @@ export class Seekbar {
     this.webRtcTimelineContainer.appendChild(this.webRtcSeekRangeElement);
   }
 
-  onSeekEventHandler(e) {
-    console.log('Seek not available');
+  onSeekEventHandler(e: PointerEvent | TouchEvent) {
+    // console.log('Seek not available');
   }
 
-  getSeekPosition(e) {
-    if (e.type === 'touchend') {
-      return e.changedTouches[0].target.value;
+  getSeekPosition(e: PointerEvent | TouchEvent) {
+    if (e instanceof TouchEvent) {
+      return (e.changedTouches[0].target as HTMLInputElement).value;
     } else {
-      return e.target.value;
+      return (e.target as HTMLInputElement).value;
     }
   }
 }
