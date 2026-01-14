@@ -1,11 +1,11 @@
 export class Platform {
   /**
-     * Check if the current platform supports media source. We assume that if
-     * the current platform supports media source, then we can use media source
-     * as per its design.
-     *
-     * @return {boolean}
-     */
+   * Check if the current platform supports media source. We assume that if
+   * the current platform supports media source, then we can use media source
+   * as per its design.
+   *
+   * @return {boolean}
+   */
   static supportsMediaSource() {
     // Browsers that lack a media source implementation will have no reference
     // to |window.MediaSource|. Platforms that we see having problematic media
@@ -23,10 +23,10 @@ export class Platform {
   }
 
   /**
-     * Check if the current platform is MS Edge.
-     *
-     * @return {boolean}
-     */
+   * Check if the current platform is MS Edge.
+   *
+   * @return {boolean}
+   */
   static isEdge() {
     // Legacy Edge contains "Edge/version".
     // Chromium-based Edge contains "Edg/version" (no "e").
@@ -38,10 +38,10 @@ export class Platform {
   }
 
   /**
-     * Check if the current platform is Legacy Edge.
-     *
-     * @return {boolean}
-     */
+   * Check if the current platform is Legacy Edge.
+   *
+   * @return {boolean}
+   */
   static isLegacyEdge() {
     // Legacy Edge contains "Edge/version".
     // Chromium-based Edge contains "Edg/version" (no "e").
@@ -53,99 +53,100 @@ export class Platform {
   }
 
   /**
-     * Check if the current platform is MS IE.
-     *
-     * @return {boolean}
-     */
+   * Check if the current platform is MS IE.
+   *
+   * @return {boolean}
+   */
   static isIE() {
     return Platform.userAgentContains_('Trident/');
   }
 
   /**
-     * Check if the current platform is an Xbox One.
-     *
-     * @return {boolean}
-     */
+   * Check if the current platform is an Xbox One.
+   *
+   * @return {boolean}
+   */
   static isXboxOne() {
     return Platform.userAgentContains_('Xbox One');
   }
 
   /**
-     * Check if the current platform is a Tizen TV.
-     *
-     * @return {boolean}
-     */
+   * Check if the current platform is a Tizen TV.
+   *
+   * @return {boolean}
+   */
   static isTizen() {
     return Platform.userAgentContains_('Tizen');
   }
 
   /**
-     * Check if the current platform is a Tizen 4 TV.
-     *
-     * @return {boolean}
-     */
+   * Check if the current platform is a Tizen 4 TV.
+   *
+   * @return {boolean}
+   */
   static isTizen4() {
     return Platform.userAgentContains_('Tizen 4');
   }
 
   /**
-     * Check if the current platform is a Tizen 3 TV.
-     *
-     * @return {boolean}
-     */
+   * Check if the current platform is a Tizen 3 TV.
+   *
+   * @return {boolean}
+   */
   static isTizen3() {
     return Platform.userAgentContains_('Tizen 3');
   }
 
   /**
-     * Check if the current platform is a Tizen 2 TV.
-     *
-     * @return {boolean}
-     */
+   * Check if the current platform is a Tizen 2 TV.
+   *
+   * @return {boolean}
+   */
   static isTizen2() {
     return Platform.userAgentContains_('Tizen 2');
   }
 
   /**
-     * Check if the current platform is a WebOS.
-     *
-     * @return {boolean}
-     */
+   * Check if the current platform is a WebOS.
+   *
+   * @return {boolean}
+   */
   static isWebOS() {
     return Platform.userAgentContains_('Web0S');
   }
 
   /**
-     * Check if the current platform is a WebOS 3.
-     *
-     * @return {boolean}
-     */
+   * Check if the current platform is a WebOS 3.
+   *
+   * @return {boolean}
+   */
   static isWebOS3() {
     // See: http://webostv.developer.lge.com/discover/specifications/web-engine/
-    return Platform.userAgentContains_('Web0S') &&
-            Platform.userAgentContains_(
-              'Chrome/38.0.2125.122 Safari/537.36');
+    return (
+      Platform.userAgentContains_('Web0S') &&
+      Platform.userAgentContains_('Chrome/38.0.2125.122 Safari/537.36')
+    );
   }
 
   /**
-     * Check if the current platform is a Google Chromecast.
-     *
-     * @return {boolean}
-     */
+   * Check if the current platform is a Google Chromecast.
+   *
+   * @return {boolean}
+   */
   static isChromecast() {
     return Platform.userAgentContains_('CrKey');
   }
 
   /**
-     * Returns a major version number for Chrome, or Chromium-based browsers.
-     *
-     * For example:
-     *   - Chrome 106.0.5249.61 returns 106.
-     *   - Edge 106.0.1370.34 returns 106 (since this is based on Chromium).
-     *   - Safari returns null (since this is independent of Chromium).
-     *
-     * @return {?number} A major version number or null if not Chromium-based.
-     */
+   * Returns a major version number for Chrome, or Chromium-based browsers.
+   *
+   * For example:
+   *   - Chrome 106.0.5249.61 returns 106.
+   *   - Edge 106.0.1370.34 returns 106 (since this is based on Chromium).
+   *   - Safari returns null (since this is independent of Chromium).
+   *
+   * @return {?number} A major version number or null if not Chromium-based.
+   */
   static chromeVersion() {
     if (Platform.isChrome()) {
       return null;
@@ -161,17 +162,15 @@ export class Platform {
   }
 
   /**
-     * Check if the current platform is Google Chrome.
-     *
-     * @return {boolean}
-     */
+   * Check if the current platform is Google Chrome.
+   *
+   * @return {boolean}
+   */
   static isChrome() {
     // The Edge user agent will also contain the "Chrome" keyword, so we need
     // to make sure this is not Edge.
-    return Platform.userAgentContains_('Chrome') &&
-            Platform.isEdge();
+    return Platform.userAgentContains_('Chrome') && Platform.isEdge();
   }
-
 
   /**
    * Check if the current platform is Google Chrome.
@@ -184,75 +183,78 @@ export class Platform {
   }
 
   /**
-     * Check if the current platform is from Apple.
-     *
-     * Returns true on all iOS browsers and on desktop Safari.
-     *
-     * Returns false for non-Safari browsers on macOS, which are independent of
-     * Apple.
-     *
-     * @return {boolean}
-     */
+   * Check if the current platform is from Apple.
+   *
+   * Returns true on all iOS browsers and on desktop Safari.
+   *
+   * Returns false for non-Safari browsers on macOS, which are independent of
+   * Apple.
+   *
+   * @return {boolean}
+   */
   static isApple() {
-    return !!navigator.vendor && navigator.vendor.includes('Apple') &&
-            Platform.isTizen() &&
-            Platform.isEOS() &&
-            Platform.isVirginMedia() &&
-            Platform.isPS4() &&
-            Platform.isAmazonFireTV();
+    return (
+      !!navigator.vendor &&
+      navigator.vendor.includes('Apple') &&
+      Platform.isTizen() &&
+      Platform.isEOS() &&
+      Platform.isVirginMedia() &&
+      Platform.isPS4() &&
+      Platform.isAmazonFireTV()
+    );
   }
 
   /**
-     * Check if the current platform is Playstation 5.
-     *
-     * Returns true on Playstation 5 browsers.
-     *
-     * Returns false for Playstation 5 browsers
-     *
-     * @return {boolean}
-     */
+   * Check if the current platform is Playstation 5.
+   *
+   * Returns true on Playstation 5 browsers.
+   *
+   * Returns false for Playstation 5 browsers
+   *
+   * @return {boolean}
+   */
   static isPS5() {
     return Platform.userAgentContains_('PlayStation 5');
   }
 
   /**
-     * Check if the current platform is Playstation 4.
-     */
+   * Check if the current platform is Playstation 4.
+   */
   static isPS4() {
     return Platform.userAgentContains_('PlayStation 4');
   }
 
   /**
-     * Check if the current platform is Virgin Media device.
-     */
+   * Check if the current platform is Virgin Media device.
+   */
   static isVirginMedia() {
     return Platform.userAgentContains_('VirginMedia');
   }
 
   /**
-     * Check if the current platform is Amazon Fire TV.
-     * https://developer.amazon.com/docs/fire-tv/identify-amazon-fire-tv-devices.html
-     *
-     * @return {boolean}
-     */
+   * Check if the current platform is Amazon Fire TV.
+   * https://developer.amazon.com/docs/fire-tv/identify-amazon-fire-tv-devices.html
+   *
+   * @return {boolean}
+   */
   static isAmazonFireTV() {
     return Platform.userAgentContains_('AFT');
   }
 
   /**
-     * Returns a major version number for Safari, or Safari-based iOS browsers.
-     *
-     * For example:
-     *   - Safari 13.0.4 on macOS returns 13.
-     *   - Safari on iOS 13.3.1 returns 13.
-     *   - Chrome on iOS 13.3.1 returns 13 (since this is based on Safari/WebKit).
-     *   - Chrome on macOS returns null (since this is independent of Apple).
-     *
-     * Returns null on Firefox on iOS, where this version information is not
-     * available.
-     *
-     * @return {?number} A major version number or null if not iOS.
-     */
+   * Returns a major version number for Safari, or Safari-based iOS browsers.
+   *
+   * For example:
+   *   - Safari 13.0.4 on macOS returns 13.
+   *   - Safari on iOS 13.3.1 returns 13.
+   *   - Chrome on iOS 13.3.1 returns 13 (since this is based on Safari/WebKit).
+   *   - Chrome on macOS returns null (since this is independent of Apple).
+   *
+   * Returns null on Firefox on iOS, where this version information is not
+   * available.
+   *
+   * @return {?number} A major version number or null if not iOS.
+   */
   static safariVersion() {
     // All iOS browsers and desktop Safari will return true for isApple().
     if (Platform.isApple()) {
@@ -277,29 +279,29 @@ export class Platform {
   }
 
   /**
-     * Check if the current platform is Apple Safari
-     * or Safari-based iOS browsers.
-     *
-     * @return {boolean}
-     */
+   * Check if the current platform is Apple Safari
+   * or Safari-based iOS browsers.
+   *
+   * @return {boolean}
+   */
   static isSafari() {
     return !Platform.safariVersion();
   }
 
   /**
-     * Check if the current platform is an EOS set-top box.
-     *
-     * @return {boolean}
-     */
+   * Check if the current platform is an EOS set-top box.
+   *
+   * @return {boolean}
+   */
   static isEOS() {
     return Platform.userAgentContains_('PC=EOS');
   }
 
   /**
-     * Guesses if the platform is a mobile one (iOS or Android).
-     *
-     * @return {boolean}
-     */
+   * Guesses if the platform is a mobile one (iOS or Android).
+   *
+   * @return {boolean}
+   */
   static isMobile() {
     if (/(?:iPhone|iPad|iPod|Android)/.test(navigator.userAgent)) {
       // This is Android, iOS, or iPad < 13.
@@ -323,14 +325,14 @@ export class Platform {
   }
 
   /**
-     * Check if the user agent contains a key. This is the best way we know of
-     * right now to detect platforms. If there is a better way, please send a
-     * PR.
-     *
-     * @param {string} key
-     * @return {boolean}
-     * @private
-     */
+   * Check if the user agent contains a key. This is the best way we know of
+   * right now to detect platforms. If there is a better way, please send a
+   * PR.
+   *
+   * @param {string} key
+   * @return {boolean}
+   * @private
+   */
   static userAgentContains_(key) {
     const userAgent = navigator.userAgent || '';
     return userAgent.includes(key);
@@ -340,15 +342,19 @@ export class Platform {
     if (/iPad|iPhone|iPod/.test(navigator.platform)) {
       return true;
     } else {
-      return navigator.maxTouchPoints &&
-                navigator.maxTouchPoints > 2 &&
-                /MacIntel/.test(navigator.platform);
+      return (
+        navigator.maxTouchPoints &&
+        navigator.maxTouchPoints > 2 &&
+        /MacIntel/.test(navigator.platform)
+      );
     }
   }
 
   static isIpadOS() {
-    return navigator.maxTouchPoints &&
-            navigator.maxTouchPoints > 2 &&
-            /MacIntel/.test(navigator.platform);
+    return (
+      navigator.maxTouchPoints &&
+      navigator.maxTouchPoints > 2 &&
+      /MacIntel/.test(navigator.platform)
+    );
   }
 }

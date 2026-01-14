@@ -14,14 +14,14 @@ function getBuildDatetime() {
   let hours, minutes;
   const now = new Date();
   hours = now.getHours();
-  hours = (hours >= 10) ? hours : '0' + hours;
+  hours = hours >= 10 ? hours : '0' + hours;
   minutes = now.getMinutes();
-  minutes = (minutes >= 10) ? minutes : '0' + minutes;
+  minutes = minutes >= 10 ? minutes : '0' + minutes;
   let day = now.getDate();
-  day = (day >= 10) ? day : '0' + day;
+  day = day >= 10 ? day : '0' + day;
   const years = now.getFullYear();
   let months = now.getUTCMonth() + 1;
-  months = (months >= 10) ? months : '0' + months;
+  months = months >= 10 ? months : '0' + months;
   return `${years}-${months}-${day}-${hours}-${minutes}`;
 }
 
@@ -29,32 +29,26 @@ const version = packageJson.version;
 
 module.exports = merge(commonConfig, {
   entry: {
-    index: path.resolve(__dirname, 'src/js/webRTCPlayer.js')
+    index: path.resolve(__dirname, 'src/js/webRTCPlayer.ts'),
   },
   mode: 'production',
+  devtool: 'source-map', // Essential for producing .map files
   module: {
     rules: [
       {
         test: /\.css$/,
-        use: [
-          MiniCssExtractPlugin.loader,
-          'css-loader'
-        ]
+        use: [MiniCssExtractPlugin.loader, 'css-loader'],
       },
       {
         test: /\.scss$/,
-        use: [
-          MiniCssExtractPlugin.loader,
-          'css-loader',
-          'sass-loader',
-        ]
-      }
-    ]
+        use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'],
+      },
+    ],
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: '[name].css'
-    })
+      filename: 'WebRTCPlayer.css',
+    }),
   ],
   optimization: {
     minimize: true,
@@ -70,11 +64,9 @@ WebRTC Player
   License information can be found in ${licenseFile}
 `;
           },
-
-        }
-
+        },
       }),
-      new CssMinimizerPlugin()
-    ]
-  }
+      new CssMinimizerPlugin(),
+    ],
+  },
 });

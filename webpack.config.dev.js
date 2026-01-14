@@ -4,19 +4,19 @@ const path = require('path');
 
 module.exports = merge(commonConfig, {
   entry: {
-    index: path.resolve(__dirname, 'src/js/index.js')
+    index: path.resolve(__dirname, 'src/js/index.ts'),
   },
   mode: 'development',
   devtool: 'inline-source-map',
   devServer: {
-    port: 8082
+    port: 8082,
   },
   module: {
     rules: [
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader']
-      }
-    ]
-  }
+        use: ['style-loader', 'css-loader'],
+      },
+    ],
+  },
 });

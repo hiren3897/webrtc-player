@@ -1,12 +1,11 @@
 import { createHTMLElement } from '../utils/dom';
+import { IControls, WebRTCVideoElement } from './interfaces';
 
 export class VolumeBar {
-  /**
-     *
-     * @param parent {!HTMLElement}
-     * @param controls {Controls}
-     */
-  constructor(parent, controls) {
+  video: WebRTCVideoElement;
+  private webRtcVolumeBar!: HTMLInputElement;
+
+  constructor(private parent: HTMLElement, private controls: IControls) {
     this.parent = parent;
 
     this.controls = controls;
@@ -27,7 +26,7 @@ export class VolumeBar {
   }
 
   createVolumeBar() {
-    this.webRtcVolumeBar = createHTMLElement('input');
+    this.webRtcVolumeBar = createHTMLElement('input') as HTMLInputElement;
     this.webRtcVolumeBar.classList.add('webrtc-volume-bar');
     this.webRtcVolumeBar.type = 'range';
     this.webRtcVolumeBar.step = 'any';
@@ -41,15 +40,15 @@ export class VolumeBar {
 
   onPresentationChangeVolume() {
     if (this.video.muted) {
-      this.setVolumeBarValue(0);
+      this.setVolumeBarValue('0');
     } else {
-      this.setVolumeBarValue(this.video.volume);
+      this.setVolumeBarValue(this.video.volume.toString());
     }
     // update colors
     this.updateColors();
   }
 
-  setVolumeBarValue(value) {
+  setVolumeBarValue(value: string) {
     this.webRtcVolumeBar.value = value;
   }
 
@@ -64,12 +63,12 @@ export class VolumeBar {
     };
 
     const gradient = ['to right'];
-    gradient.push(volumeBarColors.level + (this.getVolumeBarValue() * 100) + '%');
-    gradient.push(volumeBarColors.base + (this.getVolumeBarValue() * 100) + '%');
+    gradient.push(volumeBarColors.level + this.getVolumeBarValue() * 100 + '%');
+    gradient.push(volumeBarColors.base + this.getVolumeBarValue() * 100 + '%');
     gradient.push(volumeBarColors.base + '100%');
 
     this.webRtcVolumeBar.style.background =
-            'linear-gradient(' + gradient.join(',') + ')';
+      'linear-gradient(' + gradient.join(',') + ')';
   }
 
   onChange() {

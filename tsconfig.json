@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "bundler", // <--- Change from "node" to "bundler"
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["DOM", "ESNext"],
+    "allowJs": true,
+    "declaration": true, // Emit .d.ts files
+    "declarationMap": true, // Emit maps for .d.ts files
+    "emitDeclarationOnly": true, // IMPORTANT: Don't emit .js files (Babel does this)
+    "noEmit": false,
+    "sourceMap": true, // Enable source maps for debugging
+    "outDir": "./dist",
+    "declarationDir": "./dist/types", // Keep types organized in a subfolder
+    "esModuleInterop": true,
+    "strict": true
+  },
+  "include": ["src/**/*", "eslint.config.js"],
+  "exclude": ["node_modules", "dist"]
+}
