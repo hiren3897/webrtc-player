@@ -56,3 +56,30 @@ npm run build-dev
 ```bash
 npm run build-prod
 ```
+
+## ⚖️ License & Commercial Terms
+
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
+
+### 🛡️ Open Source Usage
+
+You are free to use, modify, and distribute this SDK under the terms of the AGPL-3.0.
+**Crucially, if you use this SDK to provide a service over a network (SaaS), you must make your entire source code available to your users under the same AGPL-3.0 license.**
+
+### 💼 Commercial & Proprietary Use
+
+If you wish to use this SDK in a commercial product or service **without** being forced to open-source your own proprietary code, you must obtain a **Commercial License**.
+
+A Commercial License provides:
+
+- Permission to use the SDK in closed-source projects.
+- Removal of AGPL-3.0 "copyleft" obligations.
+- Priority technical support for WebRTC implementation.
+
+**To inquire about commercial licensing or to request permission for use, please contact:**
+📧 **Email:** hr.hirenmack@gmail.com
+🔗 **Website/Profile:** [LinkedIn](https://www.linkedin.com/in/hiren-rathod-176632117)
+
+---
+
+_Copyright © 2026 Hiren RATHOD. All rights reserved._
