@@ -24,7 +24,7 @@
     "webrtc player"
   ],
   "author": "Hiren Rathod",
-  "license": "ISC",
+  "license": "AGPL-3.0-only",
   "devDependencies": {
     "@babel/core": "^7.21.0",
     "@babel/preset-env": "^7.20.2",
