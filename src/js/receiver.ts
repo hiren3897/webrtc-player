@@ -155,6 +155,7 @@ export default class Receiver {
     if (this.pc) {
       this.pc.close();
       this.pc = null;
+      this.terminated = false;
     }
   }
 

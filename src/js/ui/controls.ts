@@ -13,13 +13,14 @@ import {
   WebRTCVideoContainer,
   WebRTCVideoElement,
 } from './interfaces';
-import { PlayerOptions } from '../types';
+import { IStreamController, PlayerOptions } from '../types';
 
 export class Controls implements IControls {
   video: WebRTCVideoElement;
   videoContainer: WebRTCVideoContainer;
   config: PlayerOptions;
   container: IContainer;
+  controller: IStreamController;
 
   private seekBar: Seekbar | null;
   private controlsButtonPanel: HTMLElement;
@@ -39,10 +40,12 @@ export class Controls implements IControls {
     videoContainer: WebRTCVideoContainer,
     video: WebRTCVideoElement,
     config: PlayerOptions,
+    controller: IStreamController,
   ) {
     this.config = config;
     this.video = video;
     this.videoContainer = videoContainer;
+    this.controller = controller;
 
     this.seekBar = null;
 
@@ -227,5 +230,17 @@ export class Controls implements IControls {
     } else {
       await document.exitFullscreen();
     }
+  }
+
+  public switchToLive(): void {
+    this.controller.switchToLive();
+  }
+
+  public switchToDVR(time: number): void {
+    this.controller.switchToDVR(time);
+  }
+
+  public isDvrEnabled(): boolean {
+    return !!this.config.dvrEnabled;
   }
 }

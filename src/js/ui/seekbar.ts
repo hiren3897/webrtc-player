@@ -15,6 +15,15 @@ export class Seekbar {
     setTimeout(() => {
       this.createTimelineContainer();
 
+      this.video.addEventListener('timeupdate', () => {
+        if (this.video.duration > 0 && this.video.hasAttribute('src')) {
+          const pos = this.video.currentTime / this.video.duration;
+          this.webRtcSeekRangeElement.value = pos.toString();
+        } else {
+          this.webRtcSeekRangeElement.value = '1';
+        }
+      });
+
       this.webRtcSeekRangeElement.addEventListener('click', (e) => {
         this.onSeekEventHandler(e);
       });
@@ -47,7 +56,23 @@ export class Seekbar {
   }
 
   onSeekEventHandler(e: PointerEvent | TouchEvent) {
-    // console.log('Seek not available');
+    if (!this.controls.isDvrEnabled()) {
+      console.warn('DVR is not enabled for this stream');
+      return;
+    }
+    const position = parseFloat(this.getSeekPosition(e));
+    console.log({ position });
+    if (position >= 0.98) {
+      this.controls.switchToLive();
+    } else {
+      /*
+       * In 2026, MediaMTX HLS manifests contain the total window.
+       * We use hls.js 'liveSyncPosition' or 'duration' ONLY once HLS is loaded.
+       * For the initial switch, we pass the PERCENTAGE to the receiver
+       * and let the receiver find the time once the manifest is parsed.
+       */
+      this.controls.switchToDVR(position); // Pass percentage, not calculated time
+    }
   }
 
   getSeekPosition(e: PointerEvent | TouchEvent) {

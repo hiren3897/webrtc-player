@@ -25,6 +25,9 @@ export interface IControls {
   muteUnmuteVideo(): void;
   updateMuteIcon(): void;
   screenshot: () => void;
+  switchToLive(): void;
+  switchToDVR(time: number): void;
+  isDvrEnabled(): boolean;
 }
 
 // Define the augmented DOM elements

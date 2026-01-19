@@ -16,6 +16,8 @@ export class LiveButton {
     this.liveButton = null;
 
     this.createLiveButton();
+
+    this.controls.getVideo().addEventListener('play', () => this.updateState());
   }
 
   createLiveButton() {
@@ -23,7 +25,15 @@ export class LiveButton {
     this.liveButton.classList.add('webrtc-live-button');
     this.liveButton.classList.add('webrtc-live-button-red');
     this.liveButton.textContent = 'Live';
-    this.liveButton.disabled = true;
+    this.liveButton.addEventListener('click', () => {
+      this.controls.switchToLive();
+    });
     this.parent.appendChild(this.liveButton);
+  }
+
+  updateState() {
+    // Logic: If current stream is WebRTC (no finite duration), highlight red
+    const isLive = !isFinite(this.controls.getVideo().duration);
+    this.liveButton!.classList.toggle('is-active', isLive);
   }
 }

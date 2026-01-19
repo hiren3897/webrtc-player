@@ -5,6 +5,8 @@ export interface RetryParameters {
 
 export interface PlayerOptions {
   webRtcUrl: string;
+  hlsUrl?: string;
+  dvrEnabled?: boolean;
   onStatusChange?: ((state: string) => void) | null;
   onDemand?: boolean | null;
   ui?: {
@@ -28,4 +30,9 @@ export interface ErrorEvent extends Event {
   error: string;
   code: number;
   message: string;
+}
+
+export interface IStreamController {
+  switchToLive(): void;
+  switchToDVR(time: number): void;
 }

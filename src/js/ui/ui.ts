@@ -1,4 +1,4 @@
-import { PlayerOptions } from '../types';
+import { IStreamController, PlayerOptions } from '../types';
 import { Controls } from './controls';
 import {
   IControls,
@@ -26,6 +26,7 @@ export default class Ui implements IUi {
   config: PlayerOptions;
   constructor(
     videoContainer: WebRTCVideoContainer,
+    controller: IStreamController,
     video: WebRTCVideoElement,
     config: PlayerOptions,
   ) {
@@ -34,7 +35,7 @@ export default class Ui implements IUi {
     this.config = config;
     videoContainer.ui = this;
     video.ui = this;
-    this.controls = new Controls(videoContainer, video, config);
+    this.controls = new Controls(videoContainer, video, config, controller);
   }
 
   getWebRTCConfiguration() {

@@ -21,6 +21,9 @@
     height: 100%;
     animation: fade-in;
     animation-duration: 0.5s;
+    object-fit: contain; // Prevents stretching
+    background: black; // Keeps background clean during switch
+    aspect-ratio: 16 / 9; // Forces the player to stay the same size
   }
 
   .player-container {
