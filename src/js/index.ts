@@ -16,3 +16,9 @@ const options: PlayerOptions = {
 };
 const player = new WebRTCPlayer('videoElem', videoContainer, options);
 player.load();
+
+setTimeout(() => {
+  document.querySelector('#loadAsset')?.addEventListener('click', () => {
+    console.log(player.getPlayerLogs());
+  });
+}, 300);

@@ -5,14 +5,13 @@
  * published by the Free Software Foundation, version 3.
  */
 import Hls from 'hls.js';
-import { WebRTCVideoElement } from './ui/interfaces';
 
 export default class HlsReceiver {
   private hls: Hls | null = null;
-  private video: WebRTCVideoElement;
+  private video: HTMLVideoElement;
   private hlsUrl: string;
 
-  constructor(video: WebRTCVideoElement, hlsUrl: string) {
+  constructor(video: HTMLVideoElement, hlsUrl: string) {
     this.video = video;
     this.hlsUrl = hlsUrl;
   }
@@ -29,19 +28,14 @@ export default class HlsReceiver {
     if (Hls.isSupported() && !this.isIOS()) {
       this.hls = new Hls({
         lowLatencyMode: true,
-        backBufferLength: 60, // Keeps some buffer for smoother seeking
+        backBufferLength: 600, // Keeps some buffer for smoother seeking
       });
 
       this.hls.loadSource(this.hlsUrl);
       this.hls.attachMedia(this.video);
 
-      this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        const targetTime = this.hls!.media!.duration * seekPercentage;
-        if (isFinite(targetTime)) {
-          this.video.currentTime = targetTime;
-          // 3. Hide loading overlay once video starts
-          this.video.play().catch((e) => console.error('Autoplay blocked', e));
-        }
+      this.hls.on(Hls.Events.MANIFEST_PARSED, (e) => {
+        this.video.play().catch((e) => console.error('Autoplay blocked', e));
       });
     } else {
       // Safari/iOS Native

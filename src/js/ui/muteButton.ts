@@ -1,3 +1,4 @@
+import { ModeSwitchEvent } from '../types';
 import { IControls, WebRTCVideoElement } from './interfaces';
 
 export class MuteButton {
@@ -20,6 +21,10 @@ export class MuteButton {
     } else {
       this.webRtcMuteButton.firstChild!.textContent = 'volume_up';
     }
+
+    this.controls.videoContainer.addEventListener('onmodeswitch', () => {
+      this.controls.updateMuteIcon();
+    });
 
     this.webRtcMuteButton.addEventListener('click', () => {
       this.controls.muteUnmuteVideo();

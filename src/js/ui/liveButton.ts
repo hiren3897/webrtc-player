@@ -1,3 +1,4 @@
+import { ModeSwitchEvent } from '../types';
 import { createButton } from '../utils/dom';
 import { IControls, WebRTCVideoElement } from './interfaces';
 
@@ -17,7 +18,10 @@ export class LiveButton {
 
     this.createLiveButton();
 
-    this.controls.getVideo().addEventListener('play', () => this.updateState());
+    this.controls.videoContainer.addEventListener('onmodeswitch', (e) => {
+      const event = e as ModeSwitchEvent;
+      this.updateState(event.mode);
+    });
   }
 
   createLiveButton() {
@@ -31,9 +35,11 @@ export class LiveButton {
     this.parent.appendChild(this.liveButton);
   }
 
-  updateState() {
+  updateState(mode: 'dvr' | 'live') {
     // Logic: If current stream is WebRTC (no finite duration), highlight red
-    const isLive = !isFinite(this.controls.getVideo().duration);
-    this.liveButton!.classList.toggle('is-active', isLive);
+    this.liveButton!.classList.toggle(
+      'webrtc-live-button-red',
+      mode === 'live',
+    );
   }
 }

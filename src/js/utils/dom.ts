@@ -1,3 +1,5 @@
+import { WebRTCVideoElement } from '../ui/interfaces';
+
 /**
  * Creates an element, and cast the type from Element to HTMLElement.
  *
@@ -49,4 +51,17 @@ export const appendChildElement = (
  */
 export const getAllChildElements = (tagName: string) => {
   return document.querySelectorAll(`${tagName}`);
+};
+
+export const createHlsVideoElement = (
+  mainVideoElement: WebRTCVideoElement,
+): HTMLVideoElement => {
+  const videoEl = createHTMLElement('video') as HTMLVideoElement;
+  videoEl.id = 'videoHls';
+  videoEl.classList.add('webrtc-video');
+  videoEl.classList.add('flux-layer');
+  videoEl.classList.add('dvr-layer');
+
+  mainVideoElement.insertAdjacentElement('afterend', videoEl);
+  return videoEl;
 };

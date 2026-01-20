@@ -7,7 +7,13 @@
 import '../scss/index.scss';
 import Receiver from './receiver';
 import './static/adapter-latest';
-import { IStreamController, LogEntry, LogEvent, PlayerOptions } from './types';
+import {
+  IStreamController,
+  LogEntry,
+  LogEvent,
+  ModeSwitchEvent,
+  PlayerOptions,
+} from './types';
 import {
   IControls,
   IUi,
@@ -16,12 +22,14 @@ import {
 } from './ui/interfaces';
 import Ui from './ui/ui';
 import HlsReceiver from './hlsReceiver';
+import { createHlsVideoElement } from './utils/dom';
 
 export default class WebRTCPlayer implements IStreamController {
   static ON_LOAD_ASSET = 'loadasset';
   static ON_ASSET_LOADED = 'loadassetsuccess';
   static ON_ADD_LOG = 'addlog';
   static ON_WEBRTC_PLAYER_ERROR = 'webrtcerror';
+  static ON_MODE_SWITCH = 'onmodeswitch';
 
   public video: WebRTCVideoElement;
   public playerLoaded: boolean = false;
@@ -40,6 +48,8 @@ export default class WebRTCPlayer implements IStreamController {
   public hlsReceiver: HlsReceiver | null = null;
 
   private videoContainer: WebRTCVideoContainer;
+  private hlsVideo!: HTMLVideoElement | null;
+  private activeMode: 'live' | 'dvr' = 'live';
 
   constructor(
     id: string,
@@ -62,6 +72,10 @@ export default class WebRTCPlayer implements IStreamController {
     this.webRtcUi = new Ui(this.videoContainer, this, this.video, this.options);
     this.webRtcControls = this.webRtcUi.getWebRTCControls();
 
+    if (this.webRtcControls.isDvrEnabled()) {
+      this.hlsVideo = createHlsVideoElement(this.video);
+    }
+
     // Listen for the custom log event
     this.videoContainer.addEventListener(
       WebRTCPlayer.ON_ADD_LOG,
@@ -73,6 +87,24 @@ export default class WebRTCPlayer implements IStreamController {
 
     this.webRtcPlayerVersion = process.env.WebRTCVersion;
     this.oniOSExitFullScreenMode();
+  }
+
+  public setVolume(value: number): void {
+    this.video.volume = value;
+    if (this.hlsVideo) this.hlsVideo.volume = value;
+  }
+
+  public setMuted(muted: boolean): void {
+    this.video.muted = muted;
+    if (this.hlsVideo) this.hlsVideo.muted = muted;
+  }
+
+  getActiveVideo(): HTMLVideoElement {
+    return this.activeMode === 'live'
+      ? this.video
+      : this.webRtcControls.isDvrEnabled()
+      ? this.hlsVideo!
+      : this.video;
   }
 
   public load(): void {
@@ -87,8 +119,8 @@ export default class WebRTCPlayer implements IStreamController {
     );
 
     // Initialize HLS Receiver if DVR is enabled
-    if (this.options.dvrEnabled && this.options.hlsUrl) {
-      this.hlsReceiver = new HlsReceiver(this.video, this.options.hlsUrl);
+    if (this.options.dvrEnabled && this.options.hlsUrl && this.hlsVideo) {
+      this.hlsReceiver = new HlsReceiver(this.hlsVideo, this.options.hlsUrl);
     }
 
     this.playerLoaded = true;
@@ -101,8 +133,18 @@ export default class WebRTCPlayer implements IStreamController {
   public switchToDVR(seekTime: number): void {
     if (!this.hlsReceiver) return;
 
-    this.receiver?.destroyReceiver(); // Kill WebRTC connection to save resources
-    this.hlsReceiver.start(1); // Start HLS playback at specific time
+    this.hlsReceiver.start(seekTime);
+
+    const onPlaying = () => {
+      this.videoContainer.classList.remove('is-live');
+      this.videoContainer.classList.add('is-dvr');
+      this.receiver?.destroyReceiver();
+      console.log('ModeChange', `Switched to DVR at ${seekTime}s`);
+      this.dispatchSwitchMode('dvr');
+
+      this.hlsVideo!.removeEventListener('playing', onPlaying);
+    };
+    this.hlsVideo!.addEventListener('playing', onPlaying);
     this.createLog('ModeChange', `Switched to DVR at ${seekTime}s`);
   }
 
@@ -110,8 +152,18 @@ export default class WebRTCPlayer implements IStreamController {
    * Orchestration: Switch to Live Mode
    */
   public switchToLive(): void {
-    this.hlsReceiver?.stop(); // Kill HLS
-    this.receiver?.scheduleRestart(); // Re-establish WebRTC WHEP connection
+    this.receiver?.start(); // Re-establish WebRTC WHEP connection
+
+    const onLivePlaying = () => {
+      this.videoContainer.classList.remove('is-dvr');
+      this.videoContainer.classList.add('is-live');
+      this.hlsReceiver?.stop(); // Stop HLS only now
+      console.log('ModeChange', 'Switched to Live Flux');
+      this.dispatchSwitchMode('live');
+
+      this.video.removeEventListener('playing', onLivePlaying);
+    };
+    this.video.addEventListener('playing', onLivePlaying);
     this.createLog('ModeChange', 'Switched to Live Flux');
   }
 
@@ -145,5 +197,12 @@ export default class WebRTCPlayer implements IStreamController {
       },
       false,
     );
+  }
+
+  private dispatchSwitchMode(mode: 'dvr' | 'live') {
+    const event = new Event(WebRTCPlayer.ON_MODE_SWITCH) as ModeSwitchEvent;
+    event.mode = mode;
+    this.activeMode = mode;
+    this.videoContainer.dispatchEvent(event);
   }
 }

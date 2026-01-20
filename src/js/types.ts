@@ -26,6 +26,10 @@ export interface LogEvent extends Event {
   logMessage: string;
 }
 
+export interface ModeSwitchEvent extends Event {
+  mode: 'dvr' | 'live';
+}
+
 export interface ErrorEvent extends Event {
   error: string;
   code: number;
@@ -35,4 +39,7 @@ export interface ErrorEvent extends Event {
 export interface IStreamController {
   switchToLive(): void;
   switchToDVR(time: number): void;
+  setVolume(value: number): void;
+  setMuted(muted: boolean): void;
+  getActiveVideo(): HTMLVideoElement;
 }

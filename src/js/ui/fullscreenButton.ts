@@ -1,7 +1,6 @@
 import { IControls, WebRTCVideoElement } from './interfaces';
 
 export class FullscreenButton {
-  private video: WebRTCVideoElement;
   private webRtcFullscreenButton!: HTMLElement;
   private fullscreenButtonIcon!: HTMLSpanElement;
 
@@ -9,8 +8,6 @@ export class FullscreenButton {
     this.parent = parent;
 
     this.controls = controls;
-
-    this.video = controls.getVideo();
 
     this.createFullscreenButton();
 

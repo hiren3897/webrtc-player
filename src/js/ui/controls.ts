@@ -43,13 +43,13 @@ export class Controls implements IControls {
     controller: IStreamController,
   ) {
     this.config = config;
-    this.video = video;
+    this.video = controller.getActiveVideo();
     this.videoContainer = videoContainer;
     this.controller = controller;
 
     this.seekBar = null;
 
-    this.container = new Container(videoContainer, video);
+    this.container = new Container(videoContainer, controller);
 
     this.controlsButtonPanel = this.container.getControlsButtonPanel();
     this.bottomControlsContainer = this.container.getBottomControlsContainer();
@@ -57,8 +57,8 @@ export class Controls implements IControls {
     this.createControls();
 
     if (Platform.isMobile()) {
-      this.video.addEventListener('play', () => {
-        this.video.play();
+      this.getVideo().addEventListener('play', () => {
+        this.getVideo().play();
       });
     }
   }
@@ -108,7 +108,7 @@ export class Controls implements IControls {
   }
 
   getVideo() {
-    return this.video;
+    return this.controller.getActiveVideo();
   }
 
   getSeekBar() {
@@ -124,7 +124,7 @@ export class Controls implements IControls {
   }
 
   updateMuteIcon() {
-    if (this.video.muted) {
+    if (this.getVideo().muted) {
       this.muteButton_.muteButtonIcon.textContent = 'volume_off';
       return;
     }
@@ -134,52 +134,38 @@ export class Controls implements IControls {
   presentationIsPaused(): boolean {
     // The video element is in a paused state while seeking, but we don't count
     // that.
-    return this.video.paused;
+    return this.getVideo().paused;
   }
 
   /**
    * Play or pause the current presentation.
    */
   playPausePresentation() {
-    if (!this.video.duration) {
+    const video = this.controller.getActiveVideo();
+
+    if (!video.duration) {
       // Can't play yet.  Ignore.
       return;
     }
 
     if (this.presentationIsPaused()) {
-      this.video.play();
+      video.play();
     } else {
-      this.video.pause();
+      video.pause();
     }
   }
 
-  muteUnmuteVideo(): void {
-    if (!this.video.duration) {
-      // Can't mute/unmute yet.  Ignore.
-      return;
-    }
-
-    if (this.video.muted) {
-      this.unmute();
-    } else {
-      this.mute();
-    }
-  }
-
-  mute() {
-    this.video.muted = true;
-  }
-
-  unmute() {
-    this.video.muted = false;
+  muteUnmuteVideo() {
+    const video = this.controller.getActiveVideo();
+    this.controller.setMuted(!video.muted);
   }
 
   screenshot() {
     const canvas = document.createElement('canvas');
     // Calculate the ratio of the video's width to height
-    const ratio = this.video.clientWidth / this.video.clientHeight;
+    const ratio = this.getVideo().clientWidth / this.getVideo().clientHeight;
     // Define the required width as 100 pixels smaller than the actual video's width
-    const w = this.video.clientWidth - 100;
+    const w = this.getVideo().clientWidth - 100;
     // Calculate the height based on the video's width and the ratio
     const h = parseInt(String(w / ratio), 10);
     // Set the canvas width and height to the values just calculated
@@ -191,7 +177,7 @@ export class Controls implements IControls {
     }
     ctx.fillRect(0, 0, w, h);
 
-    ctx.drawImage(this.video, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(this.getVideo(), 0, 0, canvas.width, canvas.height);
     const dataURL = canvas.toDataURL();
     const link = document.createElement('a');
     link.download = 'screenshot.png';

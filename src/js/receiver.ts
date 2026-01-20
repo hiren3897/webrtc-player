@@ -66,6 +66,7 @@ export default class Receiver {
           this.handleRetryLogic();
         } else if (state === 'connected') {
           this.retryCounts_ = 0;
+          this.video.play().catch((e) => console.error('Autoplay blocked', e));
         }
       };
 

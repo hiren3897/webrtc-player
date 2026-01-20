@@ -1,11 +1,11 @@
+import { IStreamController } from '../types';
 import { appendChildElement, createHTMLElement } from '../utils/dom';
 import { Timer } from '../utils/timer';
-import { WebRTCVideoContainer, WebRTCVideoElement } from './interfaces';
+import { WebRTCVideoContainer } from './interfaces';
 
 export class Container {
+  controller: IStreamController;
   webRtcContainer: WebRTCVideoContainer;
-  video: WebRTCVideoElement;
-
   private recentMouseMovement_: boolean;
   private mouseStillTimer: Timer;
   private fadeControlsTimer_: Timer;
@@ -17,13 +17,15 @@ export class Container {
   /**
    * WebRTC Video Container
    */
-  constructor(videoContainer: WebRTCVideoContainer, video: WebRTCVideoElement) {
+  constructor(
+    videoContainer: WebRTCVideoContainer,
+    controller: IStreamController,
+  ) {
     this.webRtcContainer = videoContainer;
+    this.controller = controller;
 
     this.createDOM();
     this.addEventListeners();
-
-    this.video = video;
 
     /** @private {boolean} */
     this.recentMouseMovement_ = false;
@@ -167,7 +169,7 @@ export class Container {
    * @private
    */
   onContainerTouch(event: TouchEvent): void {
-    if (!this.video.duration) {
+    if (!this.controller.getActiveVideo().duration) {
       // Can't play yet.  Ignore.
       return;
     }
@@ -261,7 +263,7 @@ export class Container {
   }
 
   computeOpacity() {
-    const videoIsPaused = this.video.paused;
+    const videoIsPaused = this.controller.getActiveVideo().paused;
 
     // Keep showing the controls if the ad or video is paused, there has been
     // recent mouse movement, we're in keyboard navigation, or one of a special
