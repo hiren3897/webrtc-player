@@ -28,6 +28,7 @@ export interface IControls {
   switchToLive(): void;
   switchToDVR(time: number): void;
   isDvrEnabled(): boolean;
+  getDisplayTime(): string | number;
 }
 
 // Define the augmented DOM elements

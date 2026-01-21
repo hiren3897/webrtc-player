@@ -14,6 +14,7 @@ import {
   WebRTCVideoElement,
 } from './interfaces';
 import { IStreamController, PlayerOptions } from '../types';
+import { PresentationTime } from './presentation_time';
 
 export class Controls implements IControls {
   video: WebRTCVideoElement;
@@ -70,6 +71,7 @@ export class Controls implements IControls {
     // Configure with config?
     // add play button
     this.playButton_ = new PlayButton(this.controlsButtonPanel, this);
+    const _ = new PresentationTime(this.controlsButtonPanel, this);
 
     // live button
     this.liveButton_ = new LiveButton(this.controlsButtonPanel, this);
@@ -99,6 +101,10 @@ export class Controls implements IControls {
 
     //  seekbar
     this.seekBar = new Seekbar(this.bottomControlsContainer, this);
+  }
+
+  getDisplayTime() {
+    return this.seekBar ? this.seekBar.getValue() : this.getVideo().currentTime;
   }
 
   addSpacerElement() {

@@ -269,6 +269,25 @@
         font-weight: bold;
         cursor: not-allowed;
       }
+
+      .webrtc-presentation-time {
+        display: inline-block;
+        align-items: center;
+
+        .webrtc-current-time {
+          background: none;
+          border: none;
+          color: #fff;
+          font-size: 12px;
+          cursor: pointer;
+          padding: 0 6px;
+
+          &:disabled {
+            cursor: default;
+            opacity: 0.7;
+          }
+        }
+      }
     }
 
     .webrtc-controls-button-panel > * {

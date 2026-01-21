@@ -28,7 +28,7 @@ export default class HlsReceiver {
     if (Hls.isSupported() && !this.isIOS()) {
       this.hls = new Hls({
         lowLatencyMode: true,
-        backBufferLength: 600, // Keeps some buffer for smoother seeking
+        backBufferLength: 60, // Keeps some buffer for smoother seeking
       });
 
       this.hls.loadSource(this.hlsUrl);

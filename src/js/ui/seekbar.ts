@@ -1,47 +1,67 @@
 import { ModeSwitchEvent } from '../types';
+import { getSeekableRange } from '../utils/time';
 import { IControls, WebRTCVideoElement } from './interfaces';
 
 export class Seekbar {
-  video: WebRTCVideoElement;
-
   private webRtcSeekRangeElement!: HTMLInputElement;
   private webRtcTimelineContainer!: HTMLDivElement;
   private isUserInteracting: boolean = false; // Prevents jumping during drag
+  private currentVideo?: WebRTCVideoElement;
+  private isDvrMode = false;
 
-  constructor(private parent: HTMLElement, private controls: IControls) {
+  constructor(
+    private parent: HTMLElement,
+    private controls: IControls,
+  ) {
     this.parent = parent;
 
     this.controls = controls;
 
-    this.video = controls.getVideo(); // returns avtive video
     setTimeout(() => {
       this.createTimelineContainer();
+      this.attachControlListeners();
       this.setupInteractionListeners();
     });
+  }
 
+  private attachControlListeners() {
     this.controls.videoContainer.addEventListener('onmodeswitch', (e) => {
       const event = e as ModeSwitchEvent;
-      const video = this.controls.getVideo();
 
-      if (event.mode === 'live') {
-        // Reset to default Live state
-        this.webRtcSeekRangeElement.min = '0';
-        this.webRtcSeekRangeElement.max = '1';
-        this.webRtcSeekRangeElement.value = '1';
-        video.ontimeupdate = null;
-      } else {
-        // DVR MODE: Handle growing duration
-        video.ontimeupdate = () => {
-          if (this.isUserInteracting) return;
+      this.isDvrMode = event.mode === 'dvr';
 
-          // Update max dynamically because HLS Live duration grows every few seconds
-          if (isFinite(video.duration) && video.duration > 0) {
-            this.webRtcSeekRangeElement.max = video.duration.toString();
-            this.webRtcSeekRangeElement.value = video.currentTime.toString();
-          }
-        };
-      }
+      this.bindToActiveVideo();
+      this.update();
     });
+  }
+
+  private bindToActiveVideo() {
+    if (this.currentVideo) {
+      this.currentVideo.ontimeupdate = null;
+    }
+    this.currentVideo = this.controls.getVideo();
+
+    this.currentVideo.ontimeupdate = () => this.update();
+  }
+
+  private update() {
+    if (!this.controls.isDvrEnabled()) return;
+
+    if (!this.isDvrMode) {
+      this.resetLive();
+      return;
+    }
+
+    const video = this.controls.getVideo();
+    const range = getSeekableRange(video);
+    if (range) {
+      this.webRtcSeekRangeElement.min = range.start.toString();
+      this.webRtcSeekRangeElement.max = range.end.toString();
+    }
+  }
+
+  getValue() {
+    return this.webRtcSeekRangeElement.value;
   }
 
   private setupInteractionListeners() {
@@ -115,5 +135,11 @@ export class Seekbar {
     } else {
       return (e.target as HTMLInputElement).value;
     }
+  }
+
+  private resetLive() {
+    this.webRtcSeekRangeElement.min = '0';
+    this.webRtcSeekRangeElement.max = '1';
+    this.webRtcSeekRangeElement.value = '1';
   }
 }
