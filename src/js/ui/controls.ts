@@ -166,6 +166,14 @@ export class Controls implements IControls {
     this.controller.setMuted(!video.muted);
   }
 
+  setSeek(min: string, max: string) {
+    this.seekBar?.setSeekRange(min, max);
+  }
+
+  setPresentationCurrentTime(currentTime: string) {
+    this.seekBar?.setValue(currentTime);
+  }
+
   screenshot() {
     const canvas = document.createElement('canvas');
     // Calculate the ratio of the video's width to height

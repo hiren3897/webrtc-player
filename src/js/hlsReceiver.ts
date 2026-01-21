@@ -5,15 +5,24 @@
  * published by the Free Software Foundation, version 3.
  */
 import Hls from 'hls.js';
+import { IControls } from './ui/interfaces';
 
 export default class HlsReceiver {
   private hls: Hls | null = null;
   private video: HTMLVideoElement;
   private hlsUrl: string;
+  updatePresentationTimelineOnce: boolean;
 
-  constructor(video: HTMLVideoElement, hlsUrl: string) {
+  constructor(
+    video: HTMLVideoElement,
+    hlsUrl: string,
+    private controls: IControls,
+  ) {
     this.video = video;
     this.hlsUrl = hlsUrl;
+    this.updatePresentationTimelineOnce = false;
+
+    this.controls = controls;
   }
 
   isIOS = () =>
@@ -22,13 +31,16 @@ export default class HlsReceiver {
 
   public start(seekPercentage: number): void {
     // 1. Show a loading overlay on your UI here
-
+    this.updatePresentationTimelineOnce = false;
     this.stop(); // Cleanly closes WebRTC
 
     if (Hls.isSupported() && !this.isIOS()) {
       this.hls = new Hls({
-        lowLatencyMode: true,
-        backBufferLength: 60, // Keeps some buffer for smoother seeking
+        lowLatencyMode: false, // IMPORTANT
+        backBufferLength: 1200, // Keep full 20 min
+        maxBufferLength: 1200,
+        maxLiveSyncPlaybackRate: 1.0,
+        enableWorker: true,
       });
 
       this.hls.loadSource(this.hlsUrl);
@@ -36,6 +48,26 @@ export default class HlsReceiver {
 
       this.hls.on(Hls.Events.MANIFEST_PARSED, (e) => {
         this.video.play().catch((e) => console.error('Autoplay blocked', e));
+      });
+
+      this.hls.on(Hls.Events.LEVEL_LOADED, (_, data) => {
+        const details = data.details;
+
+        if (!details || !details.live) return;
+
+        const dvrStart = details.fragmentStart;
+        const dvrDuration = details.totalduration;
+
+        this.controls.setSeek(
+          dvrStart.toString(),
+          details.totalduration.toString(),
+        );
+        if (!this.updatePresentationTimelineOnce) {
+          const targetTime = dvrStart + dvrDuration * seekPercentage;
+
+          this.controls.setPresentationCurrentTime(targetTime.toString());
+          this.updatePresentationTimelineOnce = true;
+        }
       });
     } else {
       // Safari/iOS Native

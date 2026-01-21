@@ -103,8 +103,8 @@ export default class WebRTCPlayer implements IStreamController {
     return this.activeMode === 'live'
       ? this.video
       : this.webRtcControls.isDvrEnabled()
-      ? this.hlsVideo!
-      : this.video;
+        ? this.hlsVideo!
+        : this.video;
   }
 
   public load(): void {
@@ -120,7 +120,11 @@ export default class WebRTCPlayer implements IStreamController {
 
     // Initialize HLS Receiver if DVR is enabled
     if (this.options.dvrEnabled && this.options.hlsUrl && this.hlsVideo) {
-      this.hlsReceiver = new HlsReceiver(this.hlsVideo, this.options.hlsUrl);
+      this.hlsReceiver = new HlsReceiver(
+        this.hlsVideo,
+        this.options.hlsUrl,
+        this.webRtcControls,
+      );
     }
 
     this.playerLoaded = true;

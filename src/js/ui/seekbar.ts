@@ -5,9 +5,6 @@ import { IControls, WebRTCVideoElement } from './interfaces';
 export class Seekbar {
   private webRtcSeekRangeElement!: HTMLInputElement;
   private webRtcTimelineContainer!: HTMLDivElement;
-  private isUserInteracting: boolean = false; // Prevents jumping during drag
-  private currentVideo?: WebRTCVideoElement;
-  private isDvrMode = false;
 
   constructor(
     private parent: HTMLElement,
@@ -28,53 +25,31 @@ export class Seekbar {
     this.controls.videoContainer.addEventListener('onmodeswitch', (e) => {
       const event = e as ModeSwitchEvent;
 
-      this.isDvrMode = event.mode === 'dvr';
-
-      this.bindToActiveVideo();
-      this.update();
+      if (event.mode === 'live') {
+        this.resetLive();
+      }
     });
-  }
-
-  private bindToActiveVideo() {
-    if (this.currentVideo) {
-      this.currentVideo.ontimeupdate = null;
-    }
-    this.currentVideo = this.controls.getVideo();
-
-    this.currentVideo.ontimeupdate = () => this.update();
-  }
-
-  private update() {
-    if (!this.controls.isDvrEnabled()) return;
-
-    if (!this.isDvrMode) {
-      this.resetLive();
-      return;
-    }
-
-    const video = this.controls.getVideo();
-    const range = getSeekableRange(video);
-    if (range) {
-      this.webRtcSeekRangeElement.min = range.start.toString();
-      this.webRtcSeekRangeElement.max = range.end.toString();
-    }
   }
 
   getValue() {
     return this.webRtcSeekRangeElement.value;
   }
 
+  setValue(value: string) {
+    this.webRtcSeekRangeElement.value = value;
+  }
+
+  setSeekRange(min: string, max: string) {
+    this.webRtcSeekRangeElement.min = min;
+    this.webRtcSeekRangeElement.max = max;
+  }
+
   private setupInteractionListeners() {
-    // When user starts dragging
-    const startSeeking = () => {
-      this.isUserInteracting = true;
-    };
+    const startSeeking = () => {};
     this.webRtcSeekRangeElement.addEventListener('mousedown', startSeeking);
     this.webRtcSeekRangeElement.addEventListener('touchstart', startSeeking);
 
-    // When user finishes dragging/clicking
     const endSeeking = (e: Event) => {
-      this.isUserInteracting = false;
       this.onSeekEventHandler(e);
     };
     this.webRtcSeekRangeElement.addEventListener('change', endSeeking);
