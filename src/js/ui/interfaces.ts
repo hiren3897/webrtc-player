@@ -29,8 +29,12 @@ export interface IControls {
   switchToDVR(time: number): void;
   isDvrEnabled(): boolean;
   getDisplayTime(): string | number;
-  setSeek(min: string, max: string): void;
+  setSeek(min: number, max: number): void;
   setPresentationCurrentTime(currentTime: string): void;
+  getSeekRange(): {
+    start: number;
+    end: number;
+  };
 }
 
 // Define the augmented DOM elements

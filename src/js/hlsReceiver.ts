@@ -58,10 +58,7 @@ export default class HlsReceiver {
         const dvrStart = details.fragmentStart;
         const dvrDuration = details.totalduration;
 
-        this.controls.setSeek(
-          dvrStart.toString(),
-          details.totalduration.toString(),
-        );
+        this.controls.setSeek(dvrStart, details.totalduration);
         if (!this.updatePresentationTimelineOnce) {
           const targetTime = dvrStart + dvrDuration * seekPercentage;
 

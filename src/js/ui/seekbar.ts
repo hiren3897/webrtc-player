@@ -1,6 +1,5 @@
 import { ModeSwitchEvent } from '../types';
-import { getSeekableRange } from '../utils/time';
-import { IControls, WebRTCVideoElement } from './interfaces';
+import { IControls } from './interfaces';
 
 export class Seekbar {
   private webRtcSeekRangeElement!: HTMLInputElement;
@@ -113,8 +112,7 @@ export class Seekbar {
   }
 
   private resetLive() {
-    this.webRtcSeekRangeElement.min = '0';
-    this.webRtcSeekRangeElement.max = '1';
+    this.controls.setSeek(0, 1);
     this.webRtcSeekRangeElement.value = '1';
   }
 }

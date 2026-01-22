@@ -22,6 +22,7 @@ export class Controls implements IControls {
   config: PlayerOptions;
   container: IContainer;
   controller: IStreamController;
+  seekRange: { start: number; end: number };
 
   private seekBar: Seekbar | null;
   private controlsButtonPanel: HTMLElement;
@@ -49,6 +50,7 @@ export class Controls implements IControls {
     this.controller = controller;
 
     this.seekBar = null;
+    this.seekRange = { start: 0, end: 1 };
 
     this.container = new Container(videoContainer, controller);
 
@@ -166,8 +168,13 @@ export class Controls implements IControls {
     this.controller.setMuted(!video.muted);
   }
 
-  setSeek(min: string, max: string) {
-    this.seekBar?.setSeekRange(min, max);
+  setSeek(min: number, max: number) {
+    this.seekBar?.setSeekRange(min.toString(), max.toString());
+    this.seekRange = { start: min, end: max };
+  }
+
+  getSeekRange() {
+    return this.seekRange;
   }
 
   setPresentationCurrentTime(currentTime: string) {

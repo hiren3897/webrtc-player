@@ -20,10 +20,6 @@ export class PresentationTime {
     });
   }
 
-  // -------------------------
-  // UI
-  // -------------------------
-
   private createUI() {
     this.container = document.createElement('div');
     this.container.classList.add('webrtc-presentation-time');
@@ -42,10 +38,6 @@ export class PresentationTime {
       }
     });
   }
-
-  // -------------------------
-  // Binding logic
-  // -------------------------
 
   private attachControlListeners() {
     this.controls.videoContainer.addEventListener('onmodeswitch', (e) => {
@@ -73,44 +65,29 @@ export class PresentationTime {
     );
   }
 
-  // -------------------------
-  // Core logic
-  // -------------------------
-  // presentation_time.ts
   private update() {
-    const video = this.controls.getVideo();
     let displayTime = Number(this.controls.getDisplayTime());
 
     if (!this.isDvrMode) {
-      this.setLive();
+      this.setValue('0:00');
       return;
     }
 
-    const range = getSeekableRange(video);
-    if (!range || range.duration <= 0) {
-      this.setLive();
-      return;
-    }
+    const range = this.controls.getSeekRange();
+    const duration = range.end - range.start;
 
     const behindLive = Math.floor(range.end - displayTime);
     displayTime = Math.max(0, behindLive);
 
     // How far back are we from the actual LIVE edge of the buffer?
-    const showHour = range.duration >= 3600;
+    const showHour = duration >= 3600;
     const value = `- ${buildTimeString(behindLive, showHour)}`;
 
     if (displayTime >= 1) {
       this.setValue('- ' + buildTimeString(displayTime, showHour));
       this.timeElement.disabled = false;
-    } else {
-      this.setLive();
     }
     this.setValue(value);
-  }
-
-  private setLive() {
-    this.setValue('LIVE');
-    this.timeElement.disabled = true;
   }
 
   private setValue(value: string) {
