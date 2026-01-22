@@ -4,7 +4,10 @@ import { IControls, WebRTCVideoElement } from './interfaces';
 export class VolumeBar {
   private webRtcVolumeBar!: HTMLInputElement;
 
-  constructor(private parent: HTMLElement, private controls: IControls) {
+  constructor(
+    private parent: HTMLElement,
+    private controls: IControls,
+  ) {
     this.parent = parent;
 
     this.controls = controls;
@@ -75,5 +78,6 @@ export class VolumeBar {
     this.controls.getVideo().volume = this.getVolumeBarValue();
 
     this.controls.getVideo().muted = this.controls.getVideo().volume === 0;
+    this.controls.updateMuteIcon();
   }
 }
