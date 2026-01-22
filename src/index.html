@@ -5,21 +5,15 @@
 
   <body>
     <div class="webrtc-container" style="max-width: 50em">
+      <!-- Layer 1: WebRTC (Primary) -->
       <video
         id="videoElem"
-        class="webrtc-video webrtc-show"
+        class="webrtc-video flux-layer live-layer"
         muted
         autoplay
         playsinline
       ></video>
-      <div class="player-container webrtc-hidden">
-        <video
-          autoplay
-          playsinline
-          style="width: 100%"
-          class="player-video"
-        ></video>
-      </div>
+      <div class="spinner"></div>
     </div>
     <br />
     <button id="loadAsset" type="button">loadNext</button>

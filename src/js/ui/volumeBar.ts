@@ -2,19 +2,19 @@ import { createHTMLElement } from '../utils/dom';
 import { IControls, WebRTCVideoElement } from './interfaces';
 
 export class VolumeBar {
-  video: WebRTCVideoElement;
   private webRtcVolumeBar!: HTMLInputElement;
 
-  constructor(private parent: HTMLElement, private controls: IControls) {
+  constructor(
+    private parent: HTMLElement,
+    private controls: IControls,
+  ) {
     this.parent = parent;
 
     this.controls = controls;
 
-    this.video = controls.getVideo();
-
     this.createVolumeBar();
 
-    this.video.addEventListener('volumechange', () => {
+    this.controls.getVideo().addEventListener('volumechange', () => {
       this.onPresentationChangeVolume();
     });
 
@@ -22,6 +22,9 @@ export class VolumeBar {
       this.onChange();
     });
 
+    this.controls.videoContainer.addEventListener('onmodeswitch', () => {
+      this.onPresentationChangeVolume();
+    });
     this.onPresentationChangeVolume();
   }
 
@@ -39,10 +42,10 @@ export class VolumeBar {
   }
 
   onPresentationChangeVolume() {
-    if (this.video.muted) {
+    if (this.controls.getVideo().muted) {
       this.setVolumeBarValue('0');
     } else {
-      this.setVolumeBarValue(this.video.volume.toString());
+      this.setVolumeBarValue(this.controls.getVideo().volume.toString());
     }
     // update colors
     this.updateColors();
@@ -72,8 +75,9 @@ export class VolumeBar {
   }
 
   onChange() {
-    this.video.volume = this.getVolumeBarValue();
+    this.controls.getVideo().volume = this.getVolumeBarValue();
 
-    this.video.muted = this.video.volume === 0;
+    this.controls.getVideo().muted = this.controls.getVideo().volume === 0;
+    this.controls.updateMuteIcon();
   }
 }

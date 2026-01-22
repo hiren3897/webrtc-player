@@ -25,6 +25,18 @@ export interface IControls {
   muteUnmuteVideo(): void;
   updateMuteIcon(): void;
   screenshot: () => void;
+  switchToLive(): void;
+  switchToDVR(time: number): void;
+  isDvrEnabled(): boolean;
+  getDisplayTime(): string | number;
+  setSeek(min: number, max: number): void;
+  setPresentationCurrentTime(currentTime: string): void;
+  showSpinner(): void;
+  hideSpinner(): void;
+  getSeekRange(): {
+    start: number;
+    end: number;
+  };
 }
 
 // Define the augmented DOM elements

@@ -1,8 +1,11 @@
+import { PlayerOptions } from './types';
 import WebRTCPlayer from './webRTCPlayer';
 
 const videoContainer = document.querySelector('.webrtc-container');
-const options = {
+const options: PlayerOptions = {
   webRtcUrl: 'http://127.0.0.1:8889/live/mystream',
+  dvrEnabled: true,
+  hlsUrl: 'http://127.0.0.1:8888/live/mystream/index.m3u8',
   ui: {
     screenshot: true,
   },
@@ -13,3 +16,9 @@ const options = {
 };
 const player = new WebRTCPlayer('videoElem', videoContainer, options);
 player.load();
+
+setTimeout(() => {
+  document.querySelector('#loadAsset')?.addEventListener('click', () => {
+    console.log(player.getPlayerLogs());
+  });
+}, 300);

@@ -5,6 +5,8 @@ export interface RetryParameters {
 
 export interface PlayerOptions {
   webRtcUrl: string;
+  hlsUrl?: string;
+  dvrEnabled?: boolean;
   onStatusChange?: ((state: string) => void) | null;
   onDemand?: boolean | null;
   ui?: {
@@ -24,8 +26,20 @@ export interface LogEvent extends Event {
   logMessage: string;
 }
 
+export interface ModeSwitchEvent extends Event {
+  mode: 'dvr' | 'live';
+}
+
 export interface ErrorEvent extends Event {
   error: string;
   code: number;
   message: string;
+}
+
+export interface IStreamController {
+  switchToLive(): void;
+  switchToDVR(time: number): void;
+  setVolume(value: number): void;
+  setMuted(muted: boolean): void;
+  getActiveVideo(): HTMLVideoElement;
 }

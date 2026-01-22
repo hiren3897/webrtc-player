@@ -98,4 +98,20 @@ ffmpeg -re -f lavfi -i "testsrc=size=1280x720:rate=30" \
 -f flv rtmp://127.0.0.1/live/mystream
 ```
 
+#### Update FFmpeg to Force Keyframes
+
+MediaMTX cannot "invent" keyframes for the HLS buffer. You must force the publisher to send them every 1 or 2 seconds so HLS can start instantly upon seeking.
+Update your FFmpeg command with -g 30 (if 30fps) or -g 60:
+
+```bash
+ffmpeg -re -f lavfi -i "testsrc=size=1280x720:rate=30" \
+-c:v libx264 -preset ultrafast -tune zerolatency -g 30 \
+-c:a libopus -b:a 64k \
+-f flv rtmp://127.0.0.1/live/mystream
+```
+
+##### Use code with caution.
+
+_-g 30_: Forces a keyframe every 30 frames (1 second at 30fps), ensuring HLS starts almost immediately after a seek.
+
 Last updated: January 2026

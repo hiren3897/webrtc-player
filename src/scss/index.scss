@@ -1,3 +1,4 @@
+@use 'sass:meta';
 /*!
 * WebRTC Player styling
 */
@@ -11,44 +12,44 @@
 }
 
 .webrtc-container {
-  display: flex;
-  left: 0;
   position: relative;
-  top: 0;
+  overflow: hidden;
+  background: #000;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @include meta.load-css('spinner');
 
   .webrtc-video {
+    position: absolute; // Stack them on top of each other
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    animation: fade-in;
-    animation-duration: 0.5s;
+    object-fit: contain;
+    transition: opacity 0.4s ease-in-out;
+    z-index: 1;
   }
 
-  .player-container {
-    animation: fade-in;
-    animation-duration: 0.5s;
-    width: 100%;
-    height: 100%;
-
-    .player-live-button {
-      background: #757575 !important;
-      border-radius: 11px !important;
-      font-size: 8px !important;
-      height: 16px !important;
-      text-transform: uppercase;
-      position: absolute;
-      right: 0;
-      bottom: 0;
-      // margin-bottom: 16px;
+  // State: When Live is active
+  &.is-live {
+    .live-layer {
+      opacity: 1;
     }
-
-    @media all and (display-mode: fullscreen) {
-      .player-live-button {
-        margin-bottom: 41px !important;
-      }
+    .dvr-layer {
+      opacity: 0;
     }
+  }
 
-    .player-live-button:before {
-      display: none;
+  // State: When DVR is active
+  &.is-dvr {
+    .live-layer {
+      opacity: 0;
+    }
+    .dvr-layer {
+      opacity: 1;
     }
   }
 
@@ -272,7 +273,25 @@
 
       .webrtc-live-button {
         font-weight: bold;
-        cursor: not-allowed;
+      }
+
+      .webrtc-presentation-time {
+        display: flex;
+        align-items: center;
+
+        .webrtc-current-time {
+          background: none;
+          border: none;
+          color: #fff;
+          font-size: 12px;
+          cursor: pointer;
+          padding: 0 6px;
+
+          &:disabled {
+            cursor: default;
+            opacity: 0.7;
+          }
+        }
       }
     }
 

@@ -1,28 +1,58 @@
-import { IControls, WebRTCVideoElement } from './interfaces';
+import { ModeSwitchEvent } from '../types';
+import { IControls } from './interfaces';
 
 export class Seekbar {
-  video: WebRTCVideoElement;
-
   private webRtcSeekRangeElement!: HTMLInputElement;
   private webRtcTimelineContainer!: HTMLDivElement;
 
-  constructor(private parent: HTMLElement, private controls: IControls) {
+  constructor(
+    private parent: HTMLElement,
+    private controls: IControls,
+  ) {
     this.parent = parent;
 
     this.controls = controls;
 
-    this.video = controls.getVideo();
     setTimeout(() => {
       this.createTimelineContainer();
-
-      this.webRtcSeekRangeElement.addEventListener('click', (e) => {
-        this.onSeekEventHandler(e);
-      });
-
-      this.webRtcSeekRangeElement.addEventListener('touchend', (e) => {
-        this.onSeekEventHandler(e);
-      });
+      this.attachControlListeners();
+      this.setupInteractionListeners();
     });
+  }
+
+  private attachControlListeners() {
+    this.controls.videoContainer.addEventListener('onmodeswitch', (e) => {
+      const event = e as ModeSwitchEvent;
+
+      if (event.mode === 'live') {
+        this.resetLive();
+      }
+    });
+  }
+
+  getValue() {
+    return this.webRtcSeekRangeElement.value;
+  }
+
+  setValue(value: string) {
+    this.webRtcSeekRangeElement.value = value;
+  }
+
+  setSeekRange(min: string, max: string) {
+    this.webRtcSeekRangeElement.min = min;
+    this.webRtcSeekRangeElement.max = max;
+  }
+
+  private setupInteractionListeners() {
+    const startSeeking = () => {};
+    this.webRtcSeekRangeElement.addEventListener('mousedown', startSeeking);
+    this.webRtcSeekRangeElement.addEventListener('touchstart', startSeeking);
+
+    const endSeeking = (e: Event) => {
+      this.onSeekEventHandler(e);
+    };
+    this.webRtcSeekRangeElement.addEventListener('change', endSeeking);
+    this.webRtcSeekRangeElement.addEventListener('touchend', endSeeking);
   }
 
   createTimelineContainer() {
@@ -46,15 +76,43 @@ export class Seekbar {
     this.webRtcTimelineContainer.appendChild(this.webRtcSeekRangeElement);
   }
 
-  onSeekEventHandler(e: PointerEvent | TouchEvent) {
-    // console.log('Seek not available');
+  onSeekEventHandler(e: Event | TouchEvent) {
+    if (!this.controls.isDvrEnabled()) return;
+
+    const val = parseFloat(this.getSeekPosition(e));
+    const max = parseFloat(this.webRtcSeekRangeElement.max);
+    const position = val / max;
+
+    const video = this.controls.getVideo();
+    const isCurrentlyLive = !isFinite(video.duration);
+
+    if (isCurrentlyLive) {
+      if (position < 0.98) {
+        this.controls.switchToDVR(position);
+      }
+    } else {
+      // Already in DVR (HLS)
+      if (position >= 0.98) {
+        this.controls.switchToLive();
+      } else {
+        // Smooth internal seek
+        if (isFinite(val)) {
+          video.currentTime = val;
+        }
+      }
+    }
   }
 
-  getSeekPosition(e: PointerEvent | TouchEvent) {
+  getSeekPosition(e: Event | TouchEvent) {
     if (e instanceof TouchEvent) {
       return (e.changedTouches[0].target as HTMLInputElement).value;
     } else {
       return (e.target as HTMLInputElement).value;
     }
+  }
+
+  private resetLive() {
+    this.controls.setSeek(0, 1);
+    this.webRtcSeekRangeElement.value = '1';
   }
 }

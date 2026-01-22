@@ -13,13 +13,16 @@ import {
   WebRTCVideoContainer,
   WebRTCVideoElement,
 } from './interfaces';
-import { PlayerOptions } from '../types';
+import { IStreamController, PlayerOptions } from '../types';
+import { PresentationTime } from './presentation_time';
 
 export class Controls implements IControls {
   video: WebRTCVideoElement;
   videoContainer: WebRTCVideoContainer;
   config: PlayerOptions;
   container: IContainer;
+  controller: IStreamController;
+  seekRange: { start: number; end: number };
 
   private seekBar: Seekbar | null;
   private controlsButtonPanel: HTMLElement;
@@ -31,6 +34,7 @@ export class Controls implements IControls {
   private muteButton_!: MuteButton;
   private volumeBar_!: VolumeBar;
   private fullscreenButton_!: FullscreenButton;
+  private spinner_: HTMLDivElement | null;
 
   /**
    * Controls container
@@ -39,14 +43,18 @@ export class Controls implements IControls {
     videoContainer: WebRTCVideoContainer,
     video: WebRTCVideoElement,
     config: PlayerOptions,
+    controller: IStreamController,
   ) {
     this.config = config;
-    this.video = video;
+    this.video = controller.getActiveVideo();
     this.videoContainer = videoContainer;
+    this.controller = controller;
 
     this.seekBar = null;
+    this.seekRange = { start: 0, end: 1 };
 
-    this.container = new Container(videoContainer, video);
+    this.container = new Container(videoContainer, controller);
+    this.spinner_ = videoContainer.querySelector('.spinner');
 
     this.controlsButtonPanel = this.container.getControlsButtonPanel();
     this.bottomControlsContainer = this.container.getBottomControlsContainer();
@@ -54,8 +62,8 @@ export class Controls implements IControls {
     this.createControls();
 
     if (Platform.isMobile()) {
-      this.video.addEventListener('play', () => {
-        this.video.play();
+      this.getVideo().addEventListener('play', () => {
+        this.getVideo().play();
       });
     }
   }
@@ -67,6 +75,7 @@ export class Controls implements IControls {
     // Configure with config?
     // add play button
     this.playButton_ = new PlayButton(this.controlsButtonPanel, this);
+    const _ = new PresentationTime(this.controlsButtonPanel, this);
 
     // live button
     this.liveButton_ = new LiveButton(this.controlsButtonPanel, this);
@@ -98,6 +107,10 @@ export class Controls implements IControls {
     this.seekBar = new Seekbar(this.bottomControlsContainer, this);
   }
 
+  getDisplayTime() {
+    return this.seekBar ? this.seekBar.getValue() : this.getVideo().currentTime;
+  }
+
   addSpacerElement() {
     const webRtcSpacerElement = document.createElement('div');
     webRtcSpacerElement.classList.add('webrtc-spacer');
@@ -105,7 +118,7 @@ export class Controls implements IControls {
   }
 
   getVideo() {
-    return this.video;
+    return this.controller.getActiveVideo();
   }
 
   getSeekBar() {
@@ -121,7 +134,7 @@ export class Controls implements IControls {
   }
 
   updateMuteIcon() {
-    if (this.video.muted) {
+    if (this.getVideo().muted) {
       this.muteButton_.muteButtonIcon.textContent = 'volume_off';
       return;
     }
@@ -131,52 +144,51 @@ export class Controls implements IControls {
   presentationIsPaused(): boolean {
     // The video element is in a paused state while seeking, but we don't count
     // that.
-    return this.video.paused;
+    return this.getVideo().paused;
   }
 
   /**
    * Play or pause the current presentation.
    */
   playPausePresentation() {
-    if (!this.video.duration) {
+    const video = this.controller.getActiveVideo();
+
+    if (!video.duration) {
       // Can't play yet.  Ignore.
       return;
     }
 
     if (this.presentationIsPaused()) {
-      this.video.play();
+      video.play();
     } else {
-      this.video.pause();
+      video.pause();
     }
   }
 
-  muteUnmuteVideo(): void {
-    if (!this.video.duration) {
-      // Can't mute/unmute yet.  Ignore.
-      return;
-    }
-
-    if (this.video.muted) {
-      this.unmute();
-    } else {
-      this.mute();
-    }
+  muteUnmuteVideo() {
+    const video = this.controller.getActiveVideo();
+    this.controller.setMuted(!video.muted);
   }
 
-  mute() {
-    this.video.muted = true;
+  setSeek(min: number, max: number) {
+    this.seekBar?.setSeekRange(min.toString(), max.toString());
+    this.seekRange = { start: min, end: max };
   }
 
-  unmute() {
-    this.video.muted = false;
+  getSeekRange() {
+    return this.seekRange;
+  }
+
+  setPresentationCurrentTime(currentTime: string) {
+    this.seekBar?.setValue(currentTime);
   }
 
   screenshot() {
     const canvas = document.createElement('canvas');
     // Calculate the ratio of the video's width to height
-    const ratio = this.video.clientWidth / this.video.clientHeight;
+    const ratio = this.getVideo().clientWidth / this.getVideo().clientHeight;
     // Define the required width as 100 pixels smaller than the actual video's width
-    const w = this.video.clientWidth - 100;
+    const w = this.getVideo().clientWidth - 100;
     // Calculate the height based on the video's width and the ratio
     const h = parseInt(String(w / ratio), 10);
     // Set the canvas width and height to the values just calculated
@@ -188,7 +200,7 @@ export class Controls implements IControls {
     }
     ctx.fillRect(0, 0, w, h);
 
-    ctx.drawImage(this.video, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(this.getVideo(), 0, 0, canvas.width, canvas.height);
     const dataURL = canvas.toDataURL();
     const link = document.createElement('a');
     link.download = 'screenshot.png';
@@ -227,5 +239,25 @@ export class Controls implements IControls {
     } else {
       await document.exitFullscreen();
     }
+  }
+
+  public switchToLive(): void {
+    this.controller.switchToLive();
+  }
+
+  public switchToDVR(time: number): void {
+    this.controller.switchToDVR(time);
+  }
+
+  public isDvrEnabled(): boolean {
+    return !!this.config.dvrEnabled;
+  }
+
+  public showSpinner() {
+    this.spinner_?.classList.add('is-visible');
+  }
+
+  public hideSpinner() {
+    this.spinner_?.classList.remove('is-visible');
   }
 }
