@@ -5,6 +5,8 @@
  * published by the Free Software Foundation, version 3.
  */
 import Hls from 'hls.js';
+import { PlaybackStateController } from './controllers/playbackStateController';
+import { PlaybackState } from './types';
 import { IControls } from './ui/interfaces';
 
 export default class HlsReceiver {
@@ -16,12 +18,12 @@ export default class HlsReceiver {
   constructor(
     video: HTMLVideoElement,
     hlsUrl: string,
+    private playback: PlaybackStateController,
     private controls: IControls,
   ) {
     this.video = video;
     this.hlsUrl = hlsUrl;
     this.updatePresentationTimelineOnce = false;
-
     this.controls = controls;
   }
 
@@ -30,10 +32,12 @@ export default class HlsReceiver {
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
   public start(seekPercentage: number): void {
-    this.controls.showSpinner();
+    this.playback.setState(PlaybackState.LOADING);
+
     // 1. Show a loading overlay on your UI here
     this.updatePresentationTimelineOnce = false;
     this.stop(); // Cleanly closes WebRTC
+    this.attachVideoEvents();
 
     if (Hls.isSupported() && !this.isIOS()) {
       this.hls = new Hls({
@@ -48,12 +52,7 @@ export default class HlsReceiver {
       this.hls.attachMedia(this.video);
 
       this.hls.on(Hls.Events.MANIFEST_PARSED, (e) => {
-        this.video
-          .play()
-          .finally(() => {
-            this.controls.hideSpinner();
-          })
-          .catch((e) => console.error('Autoplay blocked', e));
+        this.video.play();
       });
 
       this.hls.on(Hls.Events.LEVEL_LOADED, (_, data) => {
@@ -72,6 +71,15 @@ export default class HlsReceiver {
           this.updatePresentationTimelineOnce = true;
         }
       });
+
+      this.hls.on(Hls.Events.ERROR, (_, data) => {
+        this.playback.setState(PlaybackState.BUFFERING);
+
+        if (data.fatal) {
+          this.playback.setState(PlaybackState.ERROR);
+          this.stop();
+        }
+      });
     } else {
       // Safari/iOS Native
       this.video.src = this.hlsUrl;
@@ -85,6 +93,20 @@ export default class HlsReceiver {
         { once: true },
       );
     }
+  }
+
+  private attachVideoEvents() {
+    this.video.addEventListener('waiting', () =>
+      this.playback.setState(PlaybackState.BUFFERING),
+    );
+
+    this.video.addEventListener('playing', () =>
+      this.playback.setState(PlaybackState.PLAYING),
+    );
+
+    this.video.addEventListener('stalled', () =>
+      this.playback.setState(PlaybackState.BUFFERING),
+    );
   }
 
   public stop(): void {

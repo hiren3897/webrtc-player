@@ -23,6 +23,8 @@ import {
 import Ui from './ui/ui';
 import HlsReceiver from './hlsReceiver';
 import { createHlsVideoElement } from './utils/dom';
+import { PlaybackStateController } from './controllers/playbackStateController';
+import { SpinnerController } from './controllers/spinnerController';
 
 export default class WebRTCPlayer implements IStreamController {
   static ON_LOAD_ASSET = 'loadasset';
@@ -50,6 +52,8 @@ export default class WebRTCPlayer implements IStreamController {
   private videoContainer: WebRTCVideoContainer;
   private hlsVideo!: HTMLVideoElement | null;
   private activeMode: 'live' | 'dvr' = 'live';
+  private spinnerController: SpinnerController;
+  private playbackController: PlaybackStateController;
 
   constructor(
     id: string,
@@ -71,6 +75,11 @@ export default class WebRTCPlayer implements IStreamController {
 
     this.webRtcUi = new Ui(this.videoContainer, this, this.video, this.options);
     this.webRtcControls = this.webRtcUi.getWebRTCControls();
+
+    this.spinnerController = new SpinnerController(this.webRtcControls);
+    this.playbackController = new PlaybackStateController(
+      this.spinnerController,
+    );
 
     if (this.webRtcControls.isDvrEnabled()) {
       this.hlsVideo = createHlsVideoElement(this.video);
@@ -116,7 +125,7 @@ export default class WebRTCPlayer implements IStreamController {
       this.videoContainer,
       this.options.webRtcUrl,
       this.options.retryParameters || { maxAttempts: 5, baseDelay: 1000 },
-      this.webRtcControls,
+      this.playbackController,
     );
 
     // Initialize HLS Receiver if DVR is enabled
@@ -124,6 +133,7 @@ export default class WebRTCPlayer implements IStreamController {
       this.hlsReceiver = new HlsReceiver(
         this.hlsVideo,
         this.options.hlsUrl,
+        this.playbackController,
         this.webRtcControls,
       );
     }
