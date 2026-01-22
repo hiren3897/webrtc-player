@@ -116,6 +116,7 @@ export default class WebRTCPlayer implements IStreamController {
       this.videoContainer,
       this.options.webRtcUrl,
       this.options.retryParameters || { maxAttempts: 5, baseDelay: 1000 },
+      this.webRtcControls,
     );
 
     // Initialize HLS Receiver if DVR is enabled

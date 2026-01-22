@@ -6,6 +6,7 @@
  */
 
 import { ErrorEvent, LogEvent, RetryParameters } from './types';
+import { IControls } from './ui/interfaces';
 import { convertMsToSeconds } from './utils/shared';
 import { Timer } from './utils/timer';
 import WebRTCPlayer from './webRTCPlayer';
@@ -26,6 +27,7 @@ export default class Receiver {
     videoContainer: HTMLElement,
     webRtcUrl: string,
     retryParameters: RetryParameters,
+    private controls: IControls,
   ) {
     this.video = video;
     this.videoContainer = videoContainer;
@@ -61,12 +63,18 @@ export default class Receiver {
       this.pc.onconnectionstatechange = () => {
         const state = this.pc ? this.pc.connectionState : 'destroyed';
         this.pushLogs('ConnectionState', state);
-
         if (state === 'failed' || state === 'disconnected') {
           this.handleRetryLogic();
+        } else if (state === 'new' || state === 'connecting') {
+          this.controls.showSpinner();
         } else if (state === 'connected') {
           this.retryCounts_ = 0;
-          this.video.play().catch((e) => console.error('Autoplay blocked', e));
+          this.video
+            .play()
+            .finally(() => {
+              this.controls.hideSpinner();
+            })
+            .catch((e) => console.error('Autoplay blocked', e));
         }
       };
 
@@ -117,14 +125,14 @@ export default class Receiver {
         err instanceof Error
           ? err.message
           : typeof err === 'string'
-          ? err
-          : (() => {
-              try {
-                return JSON.stringify(err);
-              } catch {
-                return String(err);
-              }
-            })() || 'Unknown error';
+            ? err
+            : (() => {
+                try {
+                  return JSON.stringify(err);
+                } catch {
+                  return String(err);
+                }
+              })() || 'Unknown error';
 
       this.pushLogs('ERROR', `WHEP Connection Failed: ${msg}`);
       this.handleRetryLogic();

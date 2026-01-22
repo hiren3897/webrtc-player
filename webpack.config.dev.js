@@ -10,6 +10,9 @@ module.exports = merge(commonConfig, {
   devtool: 'inline-source-map',
   devServer: {
     port: 8082,
+    client: {
+      overlay: false,
+    },
   },
   module: {
     rules: [

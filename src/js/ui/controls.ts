@@ -34,6 +34,7 @@ export class Controls implements IControls {
   private muteButton_!: MuteButton;
   private volumeBar_!: VolumeBar;
   private fullscreenButton_!: FullscreenButton;
+  private spinner_: HTMLDivElement | null;
 
   /**
    * Controls container
@@ -53,6 +54,7 @@ export class Controls implements IControls {
     this.seekRange = { start: 0, end: 1 };
 
     this.container = new Container(videoContainer, controller);
+    this.spinner_ = videoContainer.querySelector('.spinner');
 
     this.controlsButtonPanel = this.container.getControlsButtonPanel();
     this.bottomControlsContainer = this.container.getBottomControlsContainer();
@@ -249,5 +251,13 @@ export class Controls implements IControls {
 
   public isDvrEnabled(): boolean {
     return !!this.config.dvrEnabled;
+  }
+
+  public showSpinner() {
+    this.spinner_?.classList.add('is-visible');
+  }
+
+  public hideSpinner() {
+    this.spinner_?.classList.remove('is-visible');
   }
 }

@@ -30,6 +30,7 @@ export default class HlsReceiver {
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
   public start(seekPercentage: number): void {
+    this.controls.showSpinner();
     // 1. Show a loading overlay on your UI here
     this.updatePresentationTimelineOnce = false;
     this.stop(); // Cleanly closes WebRTC
@@ -47,7 +48,12 @@ export default class HlsReceiver {
       this.hls.attachMedia(this.video);
 
       this.hls.on(Hls.Events.MANIFEST_PARSED, (e) => {
-        this.video.play().catch((e) => console.error('Autoplay blocked', e));
+        this.video
+          .play()
+          .finally(() => {
+            this.controls.hideSpinner();
+          })
+          .catch((e) => console.error('Autoplay blocked', e));
       });
 
       this.hls.on(Hls.Events.LEVEL_LOADED, (_, data) => {

@@ -31,6 +31,8 @@ export interface IControls {
   getDisplayTime(): string | number;
   setSeek(min: number, max: number): void;
   setPresentationCurrentTime(currentTime: string): void;
+  showSpinner(): void;
+  hideSpinner(): void;
   getSeekRange(): {
     start: number;
     end: number;

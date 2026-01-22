@@ -1,3 +1,4 @@
+@use 'sass:meta';
 /*!
 * WebRTC Player styling
 */
@@ -15,6 +16,11 @@
   overflow: hidden;
   background: #000;
   aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @include meta.load-css('spinner');
 
   .webrtc-video {
     position: absolute; // Stack them on top of each other
