@@ -6,8 +6,8 @@
  */
 import Hls from 'hls.js';
 import { PlaybackStateController } from './controllers/playbackStateController';
-import { PlaybackState } from './types';
 import { IControls } from './ui/interfaces';
+import { PlaybackState } from './types/player';
 
 export default class HlsReceiver {
   private hls: Hls | null = null;

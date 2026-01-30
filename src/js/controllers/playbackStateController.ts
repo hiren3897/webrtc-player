@@ -1,4 +1,4 @@
-import { PlaybackState } from '../types';
+import { PlaybackState } from '../types/player';
 import { SpinnerController } from './spinnerController';
 
 export class PlaybackStateController {

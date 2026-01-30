@@ -1,6 +1,6 @@
-import { ModeSwitchEvent } from '../types';
 import { IControls, WebRTCVideoElement } from './interfaces';
 import { buildTimeString, getSeekableRange } from '../utils/time';
+import { ModeSwitchEvent } from '../types/event';
 
 export class PresentationTime {
   private container!: HTMLDivElement;

@@ -1,4 +1,4 @@
-import { ModeSwitchEvent } from '../types';
+import { ModeSwitchEvent } from '../types/event';
 import { createButton } from '../utils/dom';
 import { IControls, WebRTCVideoElement } from './interfaces';
 
@@ -7,7 +7,10 @@ export class LiveButton {
 
   liveButton!: HTMLButtonElement | null;
 
-  constructor(private parent: HTMLElement, private controls: IControls) {
+  constructor(
+    private parent: HTMLElement,
+    private controls: IControls,
+  ) {
     this.parent = parent;
 
     this.controls = controls;

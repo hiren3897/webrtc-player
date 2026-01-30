@@ -1,10 +1,13 @@
-import { IControls, WebRTCVideoElement } from './interfaces';
+import { IControls } from './interfaces';
 
 export class FullscreenButton {
   private webRtcFullscreenButton!: HTMLElement;
   private fullscreenButtonIcon!: HTMLSpanElement;
 
-  constructor(private parent: HTMLElement, private controls: IControls) {
+  constructor(
+    private parent: HTMLElement,
+    private controls: IControls,
+  ) {
     this.parent = parent;
 
     this.controls = controls;

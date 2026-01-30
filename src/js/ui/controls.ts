@@ -13,8 +13,9 @@ import {
   WebRTCVideoContainer,
   WebRTCVideoElement,
 } from './interfaces';
-import { IStreamController, PlayerOptions } from '../types';
 import { PresentationTime } from './presentation_time';
+import { IStreamController } from '../types/controller';
+import { PlayerOptions } from '../types/player';
 
 export class Controls implements IControls {
   video: WebRTCVideoElement;

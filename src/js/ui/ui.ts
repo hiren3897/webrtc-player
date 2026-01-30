@@ -1,4 +1,5 @@
-import { IStreamController, PlayerOptions } from '../types';
+import { IStreamController } from '../types/controller';
+import { PlayerOptions } from '../types/player';
 import { Controls } from './controls';
 import {
   IControls,
