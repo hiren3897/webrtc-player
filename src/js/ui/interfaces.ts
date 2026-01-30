@@ -1,4 +1,4 @@
-import { PlayerOptions } from '../types';
+import { PlayerOptions } from '../types/player';
 import type { Container } from './container';
 
 export interface IUi {

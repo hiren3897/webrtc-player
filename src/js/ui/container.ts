@@ -1,4 +1,4 @@
-import { IStreamController } from '../types';
+import { IStreamController } from '../types/controller';
 import { appendChildElement, createHTMLElement } from '../utils/dom';
 import { Timer } from '../utils/timer';
 import { WebRTCVideoContainer } from './interfaces';

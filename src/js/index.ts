@@ -1,4 +1,4 @@
-import { PlayerOptions } from './types';
+import { PlayerOptions } from './types/player';
 import WebRTCPlayer from './webRTCPlayer';
 
 const videoContainer = document.querySelector('.webrtc-container');

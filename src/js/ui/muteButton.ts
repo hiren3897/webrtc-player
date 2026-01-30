@@ -1,4 +1,3 @@
-import { ModeSwitchEvent } from '../types';
 import { IControls, WebRTCVideoElement } from './interfaces';
 
 export class MuteButton {
@@ -7,7 +6,10 @@ export class MuteButton {
   webRtcMuteButton!: HTMLButtonElement;
   muteButtonIcon!: HTMLSpanElement;
 
-  constructor(private parent: HTMLElement, private controls: IControls) {
+  constructor(
+    private parent: HTMLElement,
+    private controls: IControls,
+  ) {
     this.parent = parent;
 
     this.controls = controls;

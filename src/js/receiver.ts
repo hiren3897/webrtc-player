@@ -1,12 +1,11 @@
 /*
  * Copyright (C) 2026 Hiren Rathod
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, version 3.
  */
 
 import { PlaybackStateController } from './controllers/playbackStateController';
-import { ErrorEvent, LogEvent, PlaybackState, RetryParameters } from './types';
+import { ErrorEvent, LogEvent } from './types/event';
+import { ISignalingAdapter } from './types/iSignalingAdapter';
+import { RetryParameters, PlaybackState } from './types/player';
 import { convertMsToSeconds } from './utils/shared';
 import { Timer } from './utils/timer';
 import WebRTCPlayer from './webRTCPlayer';
@@ -14,27 +13,30 @@ import WebRTCPlayer from './webRTCPlayer';
 export default class Receiver {
   private video: HTMLVideoElement;
   private videoContainer: HTMLElement;
-  private webRtcUrl: string;
   private pc: RTCPeerConnection | null = null;
+
+  // Retry Logic
   private retryCounts_: number = 0;
   private retryParameters: RetryParameters;
   private isRestartFromClick_: boolean = false;
   private scheduler: Timer;
   private terminated: boolean = false;
 
+  // Adapter
+  private signalingAdapter: ISignalingAdapter;
+
   constructor(
     video: HTMLVideoElement,
     videoContainer: HTMLElement,
-    webRtcUrl: string,
+    signalingAdapter: ISignalingAdapter, // Injected dependency
     retryParameters: RetryParameters,
     private playback: PlaybackStateController,
   ) {
     this.video = video;
     this.videoContainer = videoContainer;
+    this.signalingAdapter = signalingAdapter;
     this.retryParameters = retryParameters;
-    this.webRtcUrl = webRtcUrl.endsWith('/whep')
-      ? webRtcUrl
-      : `${webRtcUrl}/whep`;
+
     this.scheduler = new Timer(() => {
       this.isRestartFromClick_ = false;
       this.scheduleRestart();
@@ -44,112 +46,89 @@ export default class Receiver {
         `Retrying to connect..., attempt: ${this.retryCounts_}`,
       );
     });
+
     this.start();
   }
 
   public async start(): Promise<void> {
     try {
+      this.playback.setState(PlaybackState.LOADING);
+
+      // 1. Create Peer Connection
       this.pc = new RTCPeerConnection({
-        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }], // You can make this configurable via options
+        bundlePolicy: 'max-bundle',
       });
 
-      this.pc.ontrack = (evt: RTCTrackEvent) => {
-        if (this.video.srcObject !== evt.streams[0]) {
-          this.video.srcObject = evt.streams[0];
-          this.pushLogs('Success', 'Remote stream track received');
-        }
-      };
+      // 2. Setup Event Listeners
+      this.setupPcListeners();
 
-      this.pc.onconnectionstatechange = () => {
-        const state = this.pc ? this.pc.connectionState : 'destroyed';
-        this.pushLogs('ConnectionState', state);
-        if (state === 'new' || state === 'connecting') {
-          this.playback.setState(PlaybackState.LOADING);
-        }
-        if (state === 'connected') {
-          this.retryCounts_ = 0;
-          this.video
-            .play()
-            .finally(() => {
-              this.playback.setState(PlaybackState.PLAYING);
-            })
-            .catch(console.error);
-        }
+      // 3. Delegate Negotiation to Adapter
+      await this.signalingAdapter.negotiate(this.pc);
 
-        if (state === 'failed' || state === 'disconnected') {
-          this.playback.setState(PlaybackState.BUFFERING);
-          this.handleRetryLogic();
-        }
-      };
-
-      this.pc.addTransceiver('video', { direction: 'recvonly' });
-      this.pc.addTransceiver('audio', { direction: 'recvonly' });
-
-      const offer = await this.pc.createOffer();
-      await this.pc.setLocalDescription(offer);
-
-      // Wait for ICE gathering
-      await new Promise<void>((resolve) => {
-        if (this.pc?.iceGatheringState === 'complete') {
-          resolve();
-        } else {
-          const checkState = () => {
-            if (this.pc?.iceGatheringState === 'complete') {
-              this.pc.removeEventListener(
-                'icegatheringstatechange',
-                checkState,
-              );
-              resolve();
-            }
-          };
-          this.pc?.addEventListener('icegatheringstatechange', checkState);
-        }
-      });
-
-      const response = await fetch(this.webRtcUrl, {
-        method: 'POST',
-        body: this.pc?.localDescription?.sdp,
-        headers: { 'Content-Type': 'application/sdp' },
-      });
-
-      if (!response.ok)
-        throw new Error(`WHEP Server responded with ${response.status}`);
-
-      const answerSdp = await response.text();
-      await this.pc.setRemoteDescription(
-        new RTCSessionDescription({
-          type: 'answer',
-          sdp: answerSdp,
-        }),
-      );
-
-      this.pushLogs('WHEP', 'SDP Handshake Successful');
+      this.pushLogs('WHEP', 'SDP Handshake Successful via Adapter');
     } catch (err: unknown) {
-      const msg =
-        err instanceof Error
-          ? err.message
-          : typeof err === 'string'
-            ? err
-            : (() => {
-                try {
-                  return JSON.stringify(err);
-                } catch {
-                  return String(err);
-                }
-              })() || 'Unknown error';
-
-      this.pushLogs('ERROR', `WHEP Connection Failed: ${msg}`);
+      const msg = err instanceof Error ? err.message : String(err);
+      this.pushLogs('ERROR', `Connection Failed: ${msg}`);
       this.handleRetryLogic();
     }
   }
 
+  private setupPcListeners(): void {
+    if (!this.pc) return;
+
+    // Handle Incoming Tracks
+    this.pc.ontrack = (evt: RTCTrackEvent) => {
+      this.pushLogs('Success', `Track received: ${evt.track.kind}`);
+
+      if (evt.track.kind === 'video') {
+        this.video.srcObject = evt.streams[0];
+
+        // --- 2026 PRO FEATURE: Jitter Buffer Control ---
+        // Force a small buffer (e.g., 200ms) to smooth out network jitter
+        const receiver = evt.receiver;
+        if (receiver && 'playoutDelayHint' in receiver) {
+          receiver.playoutDelayHint = 0.2;
+          this.pushLogs('Optimization', 'Applied 200ms Jitter Buffer');
+        }
+      }
+    };
+
+    // Connection State Logic
+    this.pc.onconnectionstatechange = () => {
+      const state = this.pc?.connectionState || 'closed';
+      this.pushLogs('ConnectionState', state);
+
+      switch (state) {
+        case 'connected':
+          this.retryCounts_ = 0;
+          this.video
+            .play()
+            .then(() => this.playback.setState(PlaybackState.PLAYING))
+            .catch((e) => console.warn('Autoplay blocked', e));
+          break;
+        case 'failed':
+        case 'disconnected':
+          this.playback.setState(PlaybackState.BUFFERING);
+          this.handleRetryLogic();
+          break;
+        case 'closed':
+          break;
+      }
+    };
+  }
+
   private handleRetryLogic(): void {
     if (this.terminated) return;
+
     if (!this.isRestartFromClick_) {
       if (this.retryCounts_ >= this.retryParameters.maxAttempts) {
+        this.pushLogs('Error', 'Max retries reached. Stopping.');
         this.retryCounts_ = 0;
+        this.playback.setState(PlaybackState.ERROR);
         return;
       }
+
       const delay =
         convertMsToSeconds(this.retryParameters.baseDelay) *
         (this.retryCounts_ + 1);
@@ -168,13 +147,13 @@ export default class Receiver {
     if (this.pc) {
       this.pc.close();
       this.pc = null;
-      this.terminated = false;
     }
   }
 
   public destroyReceiver(): void {
     this.terminated = true;
     this.scheduler.stop();
+    this.signalingAdapter.destroy(); // Clean up adapter
     this.cleanUp();
   }
 

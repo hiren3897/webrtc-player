@@ -1,4 +1,4 @@
-import { ModeSwitchEvent } from '../types';
+import { ModeSwitchEvent } from '../types/event';
 import { IControls } from './interfaces';
 
 export class Seekbar {

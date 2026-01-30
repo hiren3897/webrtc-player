@@ -1,5 +1,5 @@
 import { createHTMLElement } from '../utils/dom';
-import { IControls, WebRTCVideoElement } from './interfaces';
+import { IControls } from './interfaces';
 
 export class VolumeBar {
   private webRtcVolumeBar!: HTMLInputElement;
