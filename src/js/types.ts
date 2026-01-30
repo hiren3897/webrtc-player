@@ -43,3 +43,15 @@ export interface IStreamController {
   setMuted(muted: boolean): void;
   getActiveVideo(): HTMLVideoElement;
 }
+
+export enum PlaybackState {
+  IDLE = 'IDLE',
+  LOADING = 'LOADING',
+  BUFFERING = 'BUFFERING',
+  PLAYING = 'PLAYING',
+  ERROR = 'ERROR',
+}
+
+export interface PlaybackStateListener {
+  onPlaybackStateChange(state: PlaybackState): void;
+}

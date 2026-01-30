@@ -5,8 +5,8 @@
  * published by the Free Software Foundation, version 3.
  */
 
-import { ErrorEvent, LogEvent, RetryParameters } from './types';
-import { IControls } from './ui/interfaces';
+import { PlaybackStateController } from './controllers/playbackStateController';
+import { ErrorEvent, LogEvent, PlaybackState, RetryParameters } from './types';
 import { convertMsToSeconds } from './utils/shared';
 import { Timer } from './utils/timer';
 import WebRTCPlayer from './webRTCPlayer';
@@ -27,7 +27,7 @@ export default class Receiver {
     videoContainer: HTMLElement,
     webRtcUrl: string,
     retryParameters: RetryParameters,
-    private controls: IControls,
+    private playback: PlaybackStateController,
   ) {
     this.video = video;
     this.videoContainer = videoContainer;
@@ -63,18 +63,22 @@ export default class Receiver {
       this.pc.onconnectionstatechange = () => {
         const state = this.pc ? this.pc.connectionState : 'destroyed';
         this.pushLogs('ConnectionState', state);
-        if (state === 'failed' || state === 'disconnected') {
-          this.handleRetryLogic();
-        } else if (state === 'new' || state === 'connecting') {
-          this.controls.showSpinner();
-        } else if (state === 'connected') {
+        if (state === 'new' || state === 'connecting') {
+          this.playback.setState(PlaybackState.LOADING);
+        }
+        if (state === 'connected') {
           this.retryCounts_ = 0;
           this.video
             .play()
             .finally(() => {
-              this.controls.hideSpinner();
+              this.playback.setState(PlaybackState.PLAYING);
             })
-            .catch((e) => console.error('Autoplay blocked', e));
+            .catch(console.error);
+        }
+
+        if (state === 'failed' || state === 'disconnected') {
+          this.playback.setState(PlaybackState.BUFFERING);
+          this.handleRetryLogic();
         }
       };
 
