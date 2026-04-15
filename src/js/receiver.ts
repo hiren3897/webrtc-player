@@ -9,6 +9,7 @@ import { RetryParameters, PlaybackState } from './types/player';
 import { convertMsToSeconds } from './utils/shared';
 import { Timer } from './utils/timer';
 import WebRTCPlayer from './webRTCPlayer';
+import DiagnosticOverlay, { PlayerStats } from './ui/diagnosticOverlay';
 
 export default class Receiver {
   private video: HTMLVideoElement;
@@ -21,6 +22,10 @@ export default class Receiver {
   private isRestartFromClick_: boolean = false;
   private scheduler: Timer;
   private terminated: boolean = false;
+
+  // stats
+  private diagnostic: DiagnosticOverlay;
+  private statsInterval: number | null = null;
 
   // Adapter
   private signalingAdapter: ISignalingAdapter;
@@ -37,6 +42,8 @@ export default class Receiver {
     this.signalingAdapter = signalingAdapter;
     this.retryParameters = retryParameters;
 
+    this.diagnostic = new DiagnosticOverlay(this.videoContainer);
+
     this.scheduler = new Timer(() => {
       this.isRestartFromClick_ = false;
       this.scheduleRestart();
@@ -48,6 +55,60 @@ export default class Receiver {
     });
 
     this.start();
+  }
+
+  private async startStatsMonitor(): Promise<void> {
+    let lastBytes = 0;
+    let lastTimestamp = 0;
+
+    this.statsInterval = window.setInterval(async () => {
+      if (!this.pc) return;
+
+      const stats = await this.pc.getStats();
+      const currentStats: PlayerStats = {} as PlayerStats;
+
+      stats.forEach((report) => {
+        if (report.type === 'inbound-rtp' && report.kind === 'video') {
+          // Calculate Bitrate
+          const bytes = report.bytesReceived;
+          const now = report.timestamp;
+          const bitrate = (
+            (8 * (bytes - lastBytes)) /
+            (now - lastTimestamp)
+          ).toFixed(0);
+
+          currentStats.resolution = `${report.frameWidth}x${report.frameHeight}`;
+          currentStats.fps = report.framesPerSecond || 0;
+          currentStats.bitrate = `${bitrate} kbps`;
+          currentStats.packetLoss =
+            (report.packetsLost / report.packetsReceived) * 100;
+          currentStats.jitterBuffer = parseFloat(
+            (report.jitterBufferDelay * 1000).toFixed(0),
+          );
+
+          lastBytes = bytes;
+          lastTimestamp = now;
+
+          // --- THE "BLACK SCREEN" DETECTOR ---
+          // If we are receiving bytes but FPS is 0, the browser is stuck.
+          if (
+            bytes > lastBytes &&
+            currentStats.fps === 0 &&
+            this.video.paused === false
+          ) {
+            this.video.currentTime += 0.01; // Tiny nudge to force re-draw
+          }
+        }
+
+        if (report.type === 'candidate-pair' && report.state === 'succeeded') {
+          currentStats.latency = parseFloat(
+            (report.currentRoundTripTime * 1000).toFixed(0),
+          );
+        }
+      });
+
+      this.diagnostic.update(currentStats);
+    }, 1000);
   }
 
   public async start(): Promise<void> {
@@ -104,11 +165,17 @@ export default class Receiver {
           this.retryCounts_ = 0;
           this.video
             .play()
-            .then(() => this.playback.setState(PlaybackState.PLAYING))
+            .then(() => {
+              this.playback.setState(PlaybackState.PLAYING);
+              // 2. START MONITORING HERE
+              // We wait for the 'playing' state to ensure the pipeline is active
+              this.startStatsMonitor();
+            })
             .catch((e) => console.warn('Autoplay blocked', e));
           break;
         case 'failed':
         case 'disconnected':
+          this.stopStatsMonitor(); // Important to clean up!
           this.playback.setState(PlaybackState.BUFFERING);
           this.handleRetryLogic();
           break;
@@ -116,6 +183,14 @@ export default class Receiver {
           break;
       }
     };
+  }
+
+  private stopStatsMonitor(): void {
+    if (this.statsInterval !== null) {
+      window.clearInterval(this.statsInterval);
+      this.statsInterval = null;
+      this.pushLogs('System', 'Stats Monitor Stopped');
+    }
   }
 
   private handleRetryLogic(): void {
@@ -143,6 +218,10 @@ export default class Receiver {
     this.start();
   }
 
+  public getDiagnosticOverlay() {
+    this.diagnostic.toggle();
+  }
+
   private cleanUp(): void {
     if (this.pc) {
       this.pc.close();
@@ -152,6 +231,7 @@ export default class Receiver {
 
   public destroyReceiver(): void {
     this.terminated = true;
+    this.stopStatsMonitor();
     this.scheduler.stop();
     this.signalingAdapter.destroy(); // Clean up adapter
     this.cleanUp();

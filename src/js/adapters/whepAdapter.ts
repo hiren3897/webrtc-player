@@ -57,6 +57,16 @@ export default class WHEPAdapter implements ISignalingAdapter {
     await pc.setRemoteDescription(
       new RTCSessionDescription({ type: 'answer', sdp: answerSdp }),
     );
+
+    // WHEP servers often support a "Layer Switch" or "Refresh" via PATCH
+    // We send an empty PATCH to the resource URL to say "I'm here, send me data!"
+    if (this.resourceUrl) {
+      fetch(this.resourceUrl, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/trickle-ice-sdpfrag' },
+        body: '', // An empty fragment often forces a state refresh
+      }).catch(() => {});
+    }
   }
 
   destroy(): void {

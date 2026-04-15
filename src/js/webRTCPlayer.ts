@@ -89,6 +89,14 @@ export default class WebRTCPlayer implements IStreamController {
       },
     );
 
+    // Inside webRTCPlayer.ts constructor
+    window.addEventListener('keydown', (e) => {
+      // Press 'Shift + D' to toggle diagnostic
+      if (e.shiftKey && e.key.toLowerCase() === 'd') {
+        this.receiver?.getDiagnosticOverlay();
+      }
+    });
+
     this.webRtcPlayerVersion = process.env.WebRTCVersion;
     this.oniOSExitFullScreenMode();
   }
